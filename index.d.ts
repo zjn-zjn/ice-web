@@ -1,0 +1,11 @@
+declare module '*.svg'
+declare module '*.png'
+declare module '*.jpg'
+declare module 'dva-loading'
+declare module 'qs'
+declare module 'antd'
+declare module 'axios'
+declare module 'dva/dynamic'
+// declare module  '@antv/g6'
+declare module 'react-copy-to-clipboard'
+declare var G6: any

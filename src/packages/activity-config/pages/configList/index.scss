@@ -1,0 +1,20 @@
+.history-container {
+  .history-item {
+    display: flex;
+    align-items: center;
+
+    div {
+      flex: 1;
+      text-align: center;
+      margin: 5px 0;
+    }
+  }
+}
+
+.btn-group {
+  display: flex;
+  align-items: center;
+  margin-top: 50px;
+  margin-bottom: 30px;
+  justify-content: center;
+}

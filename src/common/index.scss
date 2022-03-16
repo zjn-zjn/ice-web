@@ -1,0 +1,49 @@
+.live-admin-common {
+  min-height: 100%;
+  height: 100%;
+  background: #fff;
+
+  .logo {
+    font-size: 18px;
+    //color: #fff;
+    color: #1890ff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0 15px;
+    img {
+      width: 30px;
+      margin-right: 5px;
+    }
+  }
+
+  .content-layout {
+    padding: 10px 15px;
+  }
+
+  .content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 30px;
+    .header-left {
+      display: flex;
+      align-items: center;
+    }
+  }
+
+  .menu-sider {
+    height: 100%;
+    max-height: 100%;
+    overflow: scroll;
+    -ms-overflow-style: none;
+    overflow: -moz-scrollbars-none;
+    &::-webkit-scrollbar {
+      width: 0 !important;
+    }
+  }
+
+  .content-body {
+    margin-top: 1px;
+  }
+}

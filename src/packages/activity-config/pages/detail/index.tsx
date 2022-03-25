@@ -688,7 +688,7 @@ const Detail = (props: any) => {
         const [importVisible, setImportVisible] = useState(false)
         const importConfirm = async (values: any) => {
           await createDispatch("config/iceImport", {
-            data: values.parameter,
+            json: values.parameter,
           })
           closeImportModal()
           getDetail(addr)

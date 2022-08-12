@@ -9,9 +9,17 @@ import EditAddModal from './components/edit-add-modal'
 import BackupModal from './components/backup-modal'
 import BackupHistory from './components/backup-history'
 
-interface ModalProps {
+interface ModalState {
   visible: boolean
   iceId: string | number
+}
+
+interface ExportModalState extends ModalState {
+  pushId?: number
+}
+
+interface HistoryModalState extends ModalState {
+  name: string
 }
 
 const ConfigList = () => {
@@ -21,15 +29,16 @@ const ConfigList = () => {
   const [pageId, setPageId] = useState(1)
   const [pageSize, setPageSize] = useState(20)
   const [importVisible, setImportVisible] = useState(false)
-  const [backupObj, setBackupObj] = useState<ModalProps>({
+  const [backupObj, setBackupObj] = useState<ModalState>({
     visible: false,
     iceId: ''
   })
-  const [showHistory, setShowHistory] = useState<ModalProps>({
+  const [showHistory, setShowHistory] = useState<HistoryModalState>({
     visible: false,
-    iceId: ''
+    iceId: '',
+    name: ''
   })
-  const [exportObj, setExportObj] = useState<ModalProps>({
+  const [exportObj, setExportObj] = useState<ExportModalState>({
     visible: false,
     iceId: ''
   })
@@ -98,10 +107,13 @@ const ConfigList = () => {
           <Button type='link' onClick={() => openPushModal(record.id)}>
             备份
           </Button>
-          <Button type='link' onClick={() => openPushHistory(record.id)}>
+          <Button
+            type='link'
+            onClick={() => openPushHistory(record.id, record.name)}
+          >
             备份历史
           </Button>
-          <Button type='link' onClick={() => exportIce(record.id)}>
+          <Button type='link' onClick={() => openExportModal(record.id)}>
             导出
           </Button>
         </>
@@ -125,15 +137,16 @@ const ConfigList = () => {
     })
   }
 
-  const openPushHistory = (id: number) => {
+  const openPushHistory = (id: number, name: string) => {
     setShowHistory({
       visible: true,
-      iceId: id
+      iceId: id,
+      name
     })
   }
 
-  const exportIce = (id: number) => {
-    setExportObj({ visible: true, iceId: id })
+  const openExportModal = (id: number, pushId?: number) => {
+    setExportObj({ visible: true, iceId: id, pushId })
   }
 
   const openImportModal = () => {
@@ -193,6 +206,7 @@ const ConfigList = () => {
       <ExportModal
         visible={exportObj.visible}
         iceId={exportObj.iceId}
+        pushId={exportObj.pushId}
         closeModal={() => {
           setExportObj((pre) => ({ ...pre, visible: false }))
         }}
@@ -218,6 +232,9 @@ const ConfigList = () => {
         app={id}
         visible={showHistory.visible}
         iceId={showHistory.iceId}
+        name={showHistory.name}
+        openExportModal={openExportModal}
+        getConfigList={getConfigList}
         closeModal={() => {
           setShowHistory((pre) => ({ ...pre, visible: false }))
         }}

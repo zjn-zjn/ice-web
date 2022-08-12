@@ -8,11 +8,12 @@ interface Props {
   visible: boolean
   closeModal: () => void
   iceId: number | string
+  pushId?: number
 }
 
-const ExportModal = ({ visible, closeModal, iceId }: Props) => {
+const ExportModal = ({ visible, closeModal, iceId, pushId }: Props) => {
   const { data, run } = useRequest<any, any[]>(
-    (iceId: number | string) => apis.iceExport({ iceId }),
+    (iceId: number | string) => apis.iceExport({ iceId, pushId }),
     {
       manual: true
     }

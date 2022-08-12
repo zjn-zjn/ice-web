@@ -1,7 +1,8 @@
-import { Modal, Table, Button } from 'antd'
+import { Modal, Table, Button, Popconfirm, message } from 'antd'
 import apis from '../../../../apis'
 import { useRequest } from 'ahooks'
 import { useEffect } from 'react'
+import dayjs from 'dayjs'
 
 interface HistoryItem {
   id: number
@@ -13,13 +14,24 @@ interface HistoryItem {
 }
 
 interface Props {
+  name: string
   visible: boolean
   closeModal: () => void
   app: string
   iceId: string | number
+  openExportModal: (id: number, pushId?: number) => void
+  getConfigList: () => void
 }
 
-const BackupHistory = ({ visible, closeModal, app, iceId }: Props) => {
+const BackupHistory = ({
+  visible,
+  closeModal,
+  app,
+  iceId,
+  openExportModal,
+  name,
+  getConfigList
+}: Props) => {
   const { data, run, loading } = useRequest<
     {
       data: {
@@ -35,6 +47,41 @@ const BackupHistory = ({ visible, closeModal, app, iceId }: Props) => {
       }),
     {
       manual: true
+    }
+  )
+
+  const { run: rollbackRun } = useRequest(
+    (pushId: number) => apis.rollback({ pushId }),
+    {
+      manual: true,
+      onSuccess: (res: any) => {
+        if (res?.ret === 0) {
+          closeModal()
+          getConfigList()
+        } else {
+          message.error(res?.data?.msg || 'failed')
+        }
+      },
+      onError: (err: any) => {
+        message.error(err.msg || 'server error')
+      }
+    }
+  )
+
+  const { run: deleteRun } = useRequest(
+    (pushId: number) => apis.deleteHistory({ pushId }),
+    {
+      manual: true,
+      onSuccess: (res: any) => {
+        if (res?.ret === 0) {
+          run()
+        } else {
+          message.error(res?.data?.msg || 'failed')
+        }
+      },
+      onError: (err: any) => {
+        message.error(err.msg || 'server error')
+      }
     }
   )
 
@@ -55,9 +102,9 @@ const BackupHistory = ({ visible, closeModal, app, iceId }: Props) => {
     },
     {
       title: '时间',
-      dataIndex: 'createAt'
-      // render: (text: any) =>
-      //   text && <p>{moment(text).format('YYYY-MM-DD HH:mm:ss')}</p>
+      dataIndex: 'createAt',
+      render: (text: string) =>
+        text && dayjs(text).format('YYYY-MM-DD HH:mm:ss')
     },
     {
       title: '备注',
@@ -66,30 +113,47 @@ const BackupHistory = ({ visible, closeModal, app, iceId }: Props) => {
     {
       title: '操作',
       dataIndex: 'operation',
-      render: (text: any, record: any) => (
+      render: (text: any, record: HistoryItem) => (
         <>
-          <Button type='link' onClick={() => pushRollback(record.id)}>
-            回滚
-          </Button>
+          <Popconfirm
+            title={`确认将 <${name}> 回滚到 [${record.id}] 版本吗？`}
+            onConfirm={() => pushRollback(record.id)}
+            okText='是'
+            cancelText='否'
+          >
+            <Button type='link'>回滚</Button>
+          </Popconfirm>
           <Button
             type='link'
             onClick={() => exportIce(record.iceId, record.id)}
           >
             导出
           </Button>
-          <Button type='link' onClick={() => deleteHistory(record.id)}>
-            删除
-          </Button>
+          <Popconfirm
+            title={`确认物理删除ID为<${record.id}> 的备份吗？`}
+            onConfirm={() => deleteHistory(record.id)}
+            okText='是'
+            cancelText='否'
+          >
+            <Button type='link'>删除</Button>
+          </Popconfirm>
         </>
       )
     }
   ]
 
-  const pushRollback = (id: number) => {}
+  const pushRollback = (pushId: number) => {
+    rollbackRun(pushId)
+  }
 
-  const exportIce = (iceId: number, id: number) => {}
+  const exportIce = (iceId: number, pushId: number) => {
+    closeModal()
+    openExportModal(iceId, pushId)
+  }
 
-  const deleteHistory = (id: number) => {}
+  const deleteHistory = (pushId: number) => {
+    deleteRun(pushId)
+  }
 
   return (
     <Modal

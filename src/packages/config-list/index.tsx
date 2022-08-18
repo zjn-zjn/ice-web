@@ -128,7 +128,9 @@ const ConfigList = () => {
     })
   }
 
-  const linkToDetail = (app: number, id: number) => {}
+  const linkToDetail = (app: number, id: number) => {
+    history.push(`/config/detail/${app}/${id}?addr=server`)
+  }
 
   const openPushModal = (id: number) => {
     setBackupObj({
@@ -157,7 +159,7 @@ const ConfigList = () => {
     <Space direction='vertical' style={{ width: '100%' }}>
       <Space>
         <Button onClick={() => openEditModal()}>新增</Button>
-        <Button onClick={openImportModal}>导入</Button>
+        {/* <Button onClick={openImportModal}>导入</Button> */}
       </Space>
       <Form form={form} layout='inline'>
         <Form.Item name='name' label='名称'>

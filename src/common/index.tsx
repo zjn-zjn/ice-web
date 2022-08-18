@@ -140,6 +140,7 @@ const Common = () => {
             <CacheSwitch>
               {routers.map((item) => (
                 <CacheRoute
+                  className='wrap'
                   key={item.path}
                   path={item.path}
                   cacheKey={item.path}

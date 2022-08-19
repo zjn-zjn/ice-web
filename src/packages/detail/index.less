@@ -1,6 +1,13 @@
 .detail-wrap {
   height: 100%;
   display: flex;
+  position: relative;
+}
+
+.operation-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 
 .tree-wrap {
@@ -8,6 +15,7 @@
   border-right: 1px solid rgba(0, 0, 0, 0.15);
   height: 100%;
   overflow: scroll;
+  padding-top: 60px;
 }
 
 .edit-wrap {
@@ -33,4 +41,12 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
+}
+
+.tree-edit-wrap {
+  margin-left: 15px;
+}
+
+.forward-item {
+  color: rgb(250, 191, 193);
 }

@@ -129,7 +129,7 @@ const ConfigList = () => {
   }
 
   const linkToDetail = (app: number, id: number) => {
-    history.push(`/config/detail/${app}/${id}?addr=server`)
+    history.push(`/config/detail/${app}/${id}`)
   }
 
   const openPushModal = (id: number) => {
@@ -159,6 +159,7 @@ const ConfigList = () => {
     <Space direction='vertical' style={{ width: '100%' }}>
       <Space>
         <Button onClick={() => openEditModal()}>新增</Button>
+        {/* TODO */}
         {/* <Button onClick={openImportModal}>导入</Button> */}
       </Space>
       <Form form={form} layout='inline'>

@@ -51,6 +51,9 @@ interface ChildrenItem {
   timeType?: number
   start?: number
   end?: number
+  forwardId?: number
+  forward?: ChildrenItem
+  isForward?: boolean
 }
 
 /**
@@ -65,4 +68,13 @@ interface ShowConf {
   nodeName?: string
   confName?: string
   confField?: string
+}
+
+/**
+ * ClassItem
+ */
+interface ClassItem {
+  count: number
+  fullName: string
+  shortName: string
 }

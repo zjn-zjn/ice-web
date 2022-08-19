@@ -1,23 +1,25 @@
 import { useParams } from 'react-router-dom'
 import apis from '../../apis'
 import { useRequest } from 'ahooks'
-import qs from 'qs'
 import Tree, { TreeItem } from './components/tree'
 import Edit from './components/edit'
-import { useCallback, useMemo, useState } from 'react'
+import { forwardRef, useCallback, useEffect, useMemo, useState } from 'react'
+import { Button, Select, Space } from 'antd'
 import './index.less'
 
 const Detail = () => {
   const { app, iceId } = useParams<{ app: string; iceId: string }>() || {}
-  const address = qs.parse(window.location.search.split(`?`)[1]).addr as string
-  const [selectNode, setSelectNode] = useState<TreeItem>()
+  const [selectedNode, setSelectedNode] = useState<TreeItem>()
+  const [address, setAddress] = useState('server')
 
   const { data, refresh } = useRequest<
     {
       data: DetailData
     },
     any[]
-  >(() => apis.details({ app, iceId, address }))
+  >(() => apis.details({ app, iceId, address }), {
+    manual: true
+  })
 
   const getTreeList = useCallback(
     (list: ChildrenItem[]): TreeItem[] =>
@@ -27,7 +29,10 @@ const Detail = () => {
           ...reset,
           showConf,
           key: `${showConf?.nodeId}`,
-          children: getTreeList(children)
+          children: getTreeList([
+            ...(item.forward ? [{ ...item.forward, isForward: true }] : []),
+            ...children
+          ])
         }
       }),
     []
@@ -38,15 +43,49 @@ const Detail = () => {
     return root ? getTreeList([root]) : []
   }, [data?.data.root])
 
+  const selectOptions = useMemo(() => {
+    return [
+      { label: 'Server', value: 'server' },
+      ...(data?.data?.registerClients || []).map((item) => ({
+        label: item,
+        value: item
+      }))
+    ]
+  }, [data?.data?.registerClients])
+
+  useEffect(() => {
+    refresh()
+  }, [address])
+
   return (
     <div className='detail-wrap'>
+      <Space className='operation-wrap'>
+        <Select
+          style={{ width: 220 }}
+          options={selectOptions}
+          value={address}
+          onChange={(v) => {
+            setAddress(v)
+          }}
+        />
+        {/* TODO  */}
+        {/* <Button type='primary'>发布</Button>
+        <Button type='primary' danger>
+          清除
+        </Button>
+        <Button>导入</Button>
+        <Button>导出</Button> */}
+      </Space>
       <Tree
         treeList={treeList}
         refresh={refresh}
-        setSelectNode={setSelectNode}
+        setSelectedNode={setSelectedNode}
+        selectedNode={selectedNode}
+        app={app}
+        iceId={iceId}
       />
       <Edit
-        selectNode={selectNode}
+        selectedNode={selectedNode}
         address={address}
         app={app}
         iceId={iceId}

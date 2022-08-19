@@ -23,14 +23,14 @@ const debugInverseOptions = [
 ]
 
 interface Props {
-  selectNode: TreeItem | undefined
+  selectedNode: TreeItem | undefined
   address: string
   app: string
   iceId: string
   refresh: () => void
 }
 
-const Edit = ({ selectNode, address, app, iceId, refresh }: Props) => {
+const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
   const [isEdit, setIsEdit] = useState(false)
   const [form] = Form.useForm()
 
@@ -54,15 +54,15 @@ const Edit = ({ selectNode, address, app, iceId, refresh }: Props) => {
 
   useEffect(() => {
     form.setFieldsValue({
-      name: selectNode?.showConf?.nodeName,
-      timeType: selectNode?.timeType || 1,
-      start: selectNode?.start,
-      end: selectNode?.end,
-      debug: selectNode?.showConf?.debug ?? true,
-      inverse: selectNode?.showConf?.inverse ?? false,
-      confField: selectNode?.showConf?.confField
+      name: selectedNode?.showConf?.nodeName,
+      timeType: selectedNode?.timeType || 1,
+      start: selectedNode?.start,
+      end: selectedNode?.end,
+      debug: selectedNode?.showConf?.debug ?? true,
+      inverse: selectedNode?.showConf?.inverse ?? false,
+      confField: selectedNode?.showConf?.confField
     })
-  }, [selectNode])
+  }, [selectedNode])
 
   const confirmEdit = () => {
     form
@@ -72,10 +72,10 @@ const Edit = ({ selectNode, address, app, iceId, refresh }: Props) => {
           app,
           iceId,
           editType: 2,
-          selectId: selectNode?.showConf?.nodeId,
-          parentId: selectNode?.parentId,
-          nextId: selectNode?.nextId,
-          ...selectNode?.showConf,
+          selectId: selectedNode?.showConf?.nodeId,
+          parentId: selectedNode?.parentId,
+          nextId: selectedNode?.nextId,
+          ...selectedNode?.showConf,
           ...values,
           confName: undefined
         }
@@ -180,6 +180,7 @@ const Edit = ({ selectNode, address, app, iceId, refresh }: Props) => {
             onClick={() => {
               setIsEdit(true)
             }}
+            disabled={!!address && address !== 'server'}
           >
             编辑
           </Button>

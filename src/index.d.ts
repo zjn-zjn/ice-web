@@ -45,19 +45,24 @@ interface ChildrenItem {
   showConf: ShowConf
   children?: ChildrenItem[]
   parentId?: number
+  nextId?: number
   index?: number
   sonIds?: string
+  timeType?: number
+  start?: number
+  end?: number
 }
 
 /**
  * ShowConf
  */
 interface ShowConf {
-  nodeId: number
-  nodeType: number
-  nodeName: string
   debug: boolean
   inverse: boolean
   labelName: string
-  confName: string
+  nodeId: number
+  nodeType: number
+  nodeName?: string
+  confName?: string
+  confField?: string
 }

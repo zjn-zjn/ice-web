@@ -4,14 +4,15 @@ import { useRequest } from 'ahooks'
 import qs from 'qs'
 import Tree, { TreeItem } from './components/tree'
 import Edit from './components/edit'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import './index.less'
 
-const DetailList = () => {
+const Detail = () => {
   const { app, iceId } = useParams<{ app: string; iceId: string }>() || {}
   const address = qs.parse(window.location.search.split(`?`)[1]).addr as string
+  const [selectNode, setSelectNode] = useState<TreeItem>()
 
-  const { data, run } = useRequest<
+  const { data, refresh } = useRequest<
     {
       data: DetailData
     },
@@ -26,7 +27,6 @@ const DetailList = () => {
           ...reset,
           showConf,
           key: `${showConf?.nodeId}`,
-          title: <div className='tree-item'>{showConf?.labelName}</div>,
           children: getTreeList(children)
         }
       }),
@@ -40,10 +40,20 @@ const DetailList = () => {
 
   return (
     <div className='detail-wrap'>
-      <Tree treeList={treeList} />
-      <Edit />
+      <Tree
+        treeList={treeList}
+        refresh={refresh}
+        setSelectNode={setSelectNode}
+      />
+      <Edit
+        selectNode={selectNode}
+        address={address}
+        app={app}
+        iceId={iceId}
+        refresh={refresh}
+      />
     </div>
   )
 }
 
-export default DetailList
+export default Detail

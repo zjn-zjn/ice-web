@@ -8,7 +8,6 @@ import {
 } from '@ant-design/icons'
 import AddExchangeNodeModal from './components/addExchangeNodeModal'
 import apis from '../../../../apis'
-import { useRequest } from 'ahooks'
 
 export interface TreeItem extends Omit<ChildrenItem, 'children'> {
   key: string
@@ -46,29 +45,24 @@ const TreeArea = ({
     }
   }, [treeList])
 
-  const { runAsync: deleteNodeRun } = useRequest(
-    (params: object) => apis.editConf(params),
-    {
-      manual: true
-    }
-  )
-
   // 删除节点
   const deleteNode = (currentNode: TreeItem) => {
     Modal.confirm({
       title: `确认删除<${currentNode.showConf.labelName}>节点吗？`,
       onOk: async () => {
-        const res: any = await deleteNodeRun({
-          app,
-          iceId,
-          editType: 3,
-          selectId: currentNode.showConf.nodeId,
-          parentId: currentNode.parentId,
-          nextId: currentNode.nextId,
-          index: currentNode.index
-        }).catch((err: any) => {
-          message.error(err.msg || 'server error')
-        })
+        const res: any = await apis
+          .editConf({
+            app,
+            iceId,
+            editType: 3,
+            selectId: currentNode.showConf.nodeId,
+            parentId: currentNode.parentId,
+            nextId: currentNode.nextId,
+            index: currentNode.index
+          })
+          .catch((err: any) => {
+            message.error(err.msg || 'server error')
+          })
         if (res?.ret === 0) {
           refresh()
           message.success('success')

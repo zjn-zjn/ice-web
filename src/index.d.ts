@@ -53,8 +53,10 @@ interface ChildrenItem {
   end?: number
   forwardId?: number
   forward?: ChildrenItem
+  // 非接口返回字段
   isForward?: boolean
   isRoot?: boolean
+  disabled?: boolean
 }
 
 /**

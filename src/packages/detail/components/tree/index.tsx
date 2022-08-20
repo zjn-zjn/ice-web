@@ -2,17 +2,18 @@ import { Tree, Modal, message } from 'antd'
 import { useEffect, useRef, useState } from 'react'
 import {
   PlusCircleTwoTone,
-  DeleteTwoTone,
   ControlTwoTone,
-  PlusSquareTwoTone
+  PlusSquareTwoTone,
+  DeleteOutlined
 } from '@ant-design/icons'
 import AddExchangeNodeModal from './components/addExchangeNodeModal'
 import apis from '../../../../apis'
+import { EventDataNode } from 'antd/lib/tree'
+import { RelationNodeMap } from './constant'
 
 export interface TreeItem extends Omit<ChildrenItem, 'children'> {
   key: string
   children: TreeItem[]
-  isForward?: boolean
 }
 
 interface Props {
@@ -111,13 +112,54 @@ const TreeArea = ({
   }
 
   // 移动节点
-  const moveNode = () => {}
+  const moveNode = ({
+    dragNode,
+    node
+  }: {
+    dragNode: EventDataNode<TreeItem>
+    dragNodesKeys: any[]
+    dropPosition: number
+    dropToGap: boolean
+    node: TreeItem
+  }) => {
+    // 不可移动到根节点、前置节点的位置
+    const canMove = !node.isRoot && !node.isForward
+    if (canMove) {
+      const params = {
+        app,
+        iceId,
+        editType: 6,
+        parentId: dragNode.parentId,
+        selectId: dragNode.showConf.nodeId,
+        index: dragNode.index,
+        moveTo: node.index,
+        moveToParentId:
+          dragNode.parentId !== node.parentId ? node.parentId : undefined
+      }
+      Modal.confirm({
+        title: `确认将 <${dragNode.showConf.labelName}> 移动到 <${node.showConf.labelName}> 的位置吗？`,
+        onOk: async () => {
+          const res: any = await apis.editConf(params).catch((err: any) => {
+            message.error(err.msg || 'server error')
+          })
+          if (res?.ret === 0) {
+            refresh()
+            message.success('success')
+          } else {
+            message.error(res?.msg || 'failed')
+          }
+        }
+      })
+    }
+  }
 
   return (
     <>
       <div className='tree-wrap'>
         {treeList.length && (
           <Tree<TreeItem>
+            draggable
+            onDrop={moveNode}
             treeData={treeList}
             showLine
             defaultExpandAll
@@ -131,7 +173,9 @@ const TreeArea = ({
               >
                 <span>{node?.showConf?.labelName}</span>
                 <span className='tree-edit-wrap'>
-                  <PlusCircleTwoTone onClick={addChildNode} />
+                  {!!RelationNodeMap.get(node.showConf.nodeType) && (
+                    <PlusCircleTwoTone onClick={addChildNode} />
+                  )}
                   <PlusSquareTwoTone
                     style={{ marginLeft: 10 }}
                     onClick={addForwardNode}
@@ -141,17 +185,15 @@ const TreeArea = ({
                     onClick={exchangeNode}
                   />
                   {!node.isRoot && (
-                    <DeleteTwoTone
+                    <DeleteOutlined
                       className='action'
-                      style={{ marginLeft: 10 }}
+                      style={{ marginLeft: 10, color: 'red' }}
                       onClick={() => deleteNode(node)}
                     />
                   )}
                 </span>
               </div>
             )}
-            // draggable
-            // onDrop={onDrop}
           />
         )}
       </div>

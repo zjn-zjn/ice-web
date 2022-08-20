@@ -34,6 +34,7 @@ const Detail = () => {
           ...reset,
           showConf,
           key: `${showConf?.nodeId}`,
+          disabled: item.isForward,
           children: getTreeList([
             ...(item.forward ? [{ ...item.forward, isForward: true }] : []),
             ...children

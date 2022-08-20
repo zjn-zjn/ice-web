@@ -1,3 +1,5 @@
+@forwarditemcolor: #ff6a6f;
+
 .detail-wrap {
   height: 100%;
   display: flex;
@@ -8,6 +10,7 @@
   position: absolute;
   top: 0;
   left: 0;
+  z-index: 2;
 }
 
 .tree-wrap {
@@ -48,5 +51,5 @@
 }
 
 .forward-item {
-  color: rgb(250, 191, 193);
+  color: @forwarditemcolor;
 }

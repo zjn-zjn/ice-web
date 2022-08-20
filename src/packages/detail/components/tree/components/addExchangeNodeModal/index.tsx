@@ -2,6 +2,7 @@ import { Modal, Input, Form, Select, message } from 'antd'
 import apis from '../../../../../../apis'
 import { useRequest } from 'ahooks'
 import { TreeItem } from '../..'
+import { RelationNodeMap } from '../../constant'
 
 const nodeTypeOptions = [
   { label: 'Relation', value: 1 },
@@ -11,18 +12,10 @@ const nodeTypeOptions = [
   { label: '节点ID', value: 13 }
 ]
 
-const relationTypeOptions = [
-  { label: 'AND', value: 1 },
-  { label: 'TRUE', value: 2 },
-  { label: 'ALL', value: 3 },
-  { label: 'ANY', value: 4 },
-  { label: 'NONE', value: 0 },
-  { label: 'P_AND', value: 9 },
-  { label: 'P_TRUE', value: 10 },
-  { label: 'P_ALL', value: 11 },
-  { label: 'P_ANY', value: 12 },
-  { label: 'P_NONE', value: 8 }
-]
+const relationTypeOptions = [...RelationNodeMap].map((item) => ({
+  label: item[1],
+  value: item[0]
+}))
 
 interface Props {
   visible: boolean
@@ -118,6 +111,9 @@ const AddNodeModal = ({
       onOk={confirm}
       confirmLoading={loading}
       width={600}
+      afterClose={() => {
+        form.resetFields()
+      }}
     >
       <Form form={form} labelCol={{ span: 6 }} wrapperCol={{ span: 14 }}>
         <Form.Item name='name' label='名称'>

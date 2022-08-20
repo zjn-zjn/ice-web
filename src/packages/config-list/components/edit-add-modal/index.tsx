@@ -28,7 +28,7 @@ const EditAddModal = ({
           getConfigList()
           closeModal()
         } else {
-          message.error(res?.data?.msg || 'failed')
+          message.error(res?.msg || 'failed')
         }
       },
       onError: (err: any) => {

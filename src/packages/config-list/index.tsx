@@ -8,6 +8,7 @@ import ExportModal from './components/export-modal'
 import EditAddModal from './components/edit-add-modal'
 import BackupModal from './components/backup-modal'
 import BackupHistory from './components/backup-history'
+import ImportModal from './components/import-modal'
 
 interface ModalState {
   visible: boolean
@@ -159,8 +160,7 @@ const ConfigList = () => {
     <Space direction='vertical' style={{ width: '100%' }}>
       <Space>
         <Button onClick={() => openEditModal()}>新增</Button>
-        {/* TODO */}
-        {/* <Button onClick={openImportModal}>导入</Button> */}
+        <Button onClick={openImportModal}>导入</Button>
       </Space>
       <Form form={form} layout='inline'>
         <Form.Item name='name' label='名称'>
@@ -240,6 +240,12 @@ const ConfigList = () => {
         getConfigList={getConfigList}
         closeModal={() => {
           setShowHistory((pre) => ({ ...pre, visible: false }))
+        }}
+      />
+      <ImportModal
+        visible={importVisible}
+        closeModal={() => {
+          setImportVisible(false)
         }}
       />
     </Space>

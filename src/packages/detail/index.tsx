@@ -40,7 +40,7 @@ const Detail = () => {
 
   const treeList = useMemo(() => {
     const root = data?.data.root
-    return root ? getTreeList([root]) : []
+    return root ? getTreeList([{ ...root, isRoot: true }]) : []
   }, [data?.data.root])
 
   const selectOptions = useMemo(() => {

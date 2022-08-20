@@ -54,6 +54,7 @@ interface ChildrenItem {
   forwardId?: number
   forward?: ChildrenItem
   isForward?: boolean
+  isRoot?: boolean
 }
 
 /**

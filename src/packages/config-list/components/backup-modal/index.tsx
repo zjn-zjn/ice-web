@@ -20,7 +20,7 @@ const BackupModal = ({ visible, closeModal, app, iceId }: Props) => {
         if (res?.ret === 0) {
           closeModal()
         } else {
-          message.error(res?.data?.msg || 'failed')
+          message.error(res?.msg || 'failed')
         }
       },
       onError: (err: any) => {

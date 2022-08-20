@@ -146,7 +146,7 @@ const TreeArea = ({
                     style={{ marginLeft: 10 }}
                     onClick={exchangeNode}
                   />
-                  {node.parentId !== 0 && (
+                  {!node.isRoot && (
                     <DeleteTwoTone
                       className='action'
                       style={{ marginLeft: 10 }}

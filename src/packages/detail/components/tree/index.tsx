@@ -136,20 +136,19 @@ const TreeArea = ({
         moveToParentId:
           dragNode.parentId !== node.parentId ? node.parentId : undefined
       }
-      Modal.confirm({
-        title: `确认将 <${dragNode.showConf.labelName}> 移动到 <${node.showConf.labelName}> 的位置吗？`,
-        onOk: async () => {
-          const res: any = await apis.editConf(params).catch((err: any) => {
-            message.error(err.msg || 'server error')
-          })
+      apis
+        .editConf(params)
+        .then((res: any) => {
           if (res?.ret === 0) {
             refresh()
             message.success('success')
           } else {
             message.error(res?.msg || 'failed')
           }
-        }
-      })
+        })
+        .catch((err: any) => {
+          message.error(err.msg || 'server error')
+        })
     }
   }
 

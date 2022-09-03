@@ -9,7 +9,7 @@ import EditAddModal from './components/edit-add-modal'
 import BackupModal from './components/backup-modal'
 import BackupHistory from './components/backup-history'
 import ImportModal from './components/import-modal'
-
+import { getSearch } from '../../utils'
 interface ModalState {
   visible: boolean
   iceId: string | number
@@ -25,7 +25,7 @@ interface HistoryModalState extends ModalState {
 
 const ConfigList = () => {
   const history = useHistory()
-  const { id } = useParams<{ id: string }>() || {}
+  const id = getSearch().id as string
   const [form] = Form.useForm()
   const [pageId, setPageId] = useState(1)
   const [pageSize, setPageSize] = useState(20)
@@ -130,7 +130,7 @@ const ConfigList = () => {
   }
 
   const linkToDetail = (app: number, id: number) => {
-    history.push(`/config/detail/${app}/${id}`)
+    history.push(`/config/detail?app=${app}&iceId=${id}`)
   }
 
   const openPushModal = (id: number) => {

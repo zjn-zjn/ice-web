@@ -7,23 +7,23 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Button, Select, Space, Modal, message } from 'antd'
 import ImportModal from '../config-list/components/import-modal'
 import ExportModal from '../config-list/components/export-modal'
-
+import { getSearch } from '../../utils'
 import './index.less'
 
 const Detail = () => {
-  const { app, iceId } = useParams<{ app: string; iceId: string }>() || {}
+  const { app, iceId } = getSearch()
   const [selectedNode, setSelectedNode] = useState<TreeItem>()
   const [address, setAddress] = useState('server')
   const [importVisible, setImportVisible] = useState(false)
   const [exportVisible, setExportVisible] = useState(false)
 
-  const { data, refresh } = useRequest<
+  const { data, run } = useRequest<
     {
       data: DetailData
     },
     any[]
   >(() => apis.details({ app, iceId, address }), {
-    manual: true
+    refreshDeps: [app, iceId, address]
   })
 
   const getTreeList = useCallback(
@@ -45,9 +45,9 @@ const Detail = () => {
   )
 
   const treeList = useMemo(() => {
-    const root = data?.data.root
+    const root = data?.data?.root
     return root ? getTreeList([{ ...root, isRoot: true }]) : []
-  }, [data?.data.root])
+  }, [data?.data?.root])
 
   const selectOptions = useMemo(() => {
     return [
@@ -58,10 +58,6 @@ const Detail = () => {
       }))
     ]
   }, [data?.data?.registerClients])
-
-  useEffect(() => {
-    refresh()
-  }, [address])
 
   const openExportModal = () => {
     setExportVisible(true)
@@ -136,7 +132,7 @@ const Detail = () => {
         </Space>
         <Tree
           treeList={treeList}
-          refresh={refresh}
+          refresh={run}
           setSelectedNode={setSelectedNode}
           selectedNode={selectedNode}
           app={app}
@@ -147,7 +143,7 @@ const Detail = () => {
           address={address}
           app={app}
           iceId={iceId}
-          refresh={refresh}
+          refresh={run}
         />
       </div>
       <ImportModal

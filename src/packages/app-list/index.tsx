@@ -53,7 +53,7 @@ const AppList = () => {
   }
 
   const linkToList = (id: number) => {
-    history.push(`/config/list/${id}`)
+    history.push(`/config/list?id=${id}`)
   }
 
   const list = data?.data?.list || []

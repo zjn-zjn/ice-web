@@ -18,12 +18,12 @@ const routers = [
   },
   {
     label: '列表',
-    path: '/config/list/:id',
+    path: '/config/list',
     component: ConfigList
   },
   {
     label: '详情',
-    path: '/config/detail/:app/:iceId',
+    path: '/config/detail',
     component: Detail
   }
 ]

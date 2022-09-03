@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [react()],
   server: {
     proxy: {
-      '/ice-server': 'http://eg.waitmoon.com'
+      '/ice-server': 'http://124.221.148.247:8121'
     }
   }
 })

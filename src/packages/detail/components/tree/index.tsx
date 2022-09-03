@@ -155,7 +155,7 @@ const TreeArea = ({
   return (
     <>
       <div className='tree-wrap'>
-        {treeList.length && (
+        {treeList.length ? (
           <Tree<TreeItem>
             draggable
             onDrop={moveNode}
@@ -194,7 +194,7 @@ const TreeArea = ({
               </div>
             )}
           />
-        )}
+        ) : null}
       </div>
       <AddExchangeNodeModal
         selectedNode={selectedNode}

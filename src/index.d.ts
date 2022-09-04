@@ -71,6 +71,8 @@ interface ShowConf {
   nodeName?: string
   confName?: string
   confField?: string
+  haveClientMeta?: boolean
+  nodeInfo?: NodeInfo
 }
 
 /**
@@ -80,4 +82,27 @@ interface ClassItem {
   count: number
   fullName: string
   shortName: string
+}
+
+/**
+ * NodeInfo
+ */
+interface NodeInfo {
+  clazz: string
+  desc: string
+  name: string
+  type: string
+  iceFields: FieldItem[]
+  hideFields?: FieldItem[]
+}
+
+/**
+ * FieldItem
+ */
+interface FieldItem {
+  field: string
+  type: string
+  name?: string
+  desc?: string
+  valueNull?: boolean
 }

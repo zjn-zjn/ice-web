@@ -1,4 +1,4 @@
-import { useHistory, useParams } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 import { useState } from 'react'
 import { Button, Table, Form, Input, Space } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'

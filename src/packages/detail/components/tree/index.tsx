@@ -136,7 +136,7 @@ const TreeArea = ({
         parentId: dragNode.parentId,
         selectId: dragNode.showConf.nodeId,
         index: dragNode.index,
-        moveTo: node.index,
+        moveTo: dragNode.parentId === node.parentId && node.index > dragNode.index ?  node.index : node.index + 1,
         moveToParentId:
           dragNode.parentId !== node.parentId ? node.parentId : undefined
       }

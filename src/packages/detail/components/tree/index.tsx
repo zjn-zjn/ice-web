@@ -122,6 +122,10 @@ const TreeArea = ({
     dropToGap: boolean
     node: TreeItem
   }) => {
+    // 前置节点不可移动
+    if (dragNode.isForward) {
+      return
+    }
     // 不可移动到根节点、前置节点的位置
     const canMove = !node.isRoot && !node.isForward
     if (canMove) {
@@ -175,10 +179,12 @@ const TreeArea = ({
                   {!!RelationNodeMap.get(node.showConf.nodeType) && (
                     <PlusCircleTwoTone onClick={addChildNode} />
                   )}
-                  <PlusSquareTwoTone
-                    style={{ marginLeft: 10 }}
-                    onClick={addForwardNode}
-                  />
+                  {!node.forward && (
+                    <PlusSquareTwoTone
+                      style={{ marginLeft: 10 }}
+                      onClick={addForwardNode}
+                    />
+                  )}
                   <ControlTwoTone
                     style={{ marginLeft: 10 }}
                     onClick={exchangeNode}

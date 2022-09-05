@@ -16,6 +16,7 @@ import {
 import { useEffect, useState } from 'react'
 import { useRequest } from 'ahooks'
 import apis from '../../../../apis'
+import { CustomDatePicker } from '../../../../components'
 
 const { Panel } = Collapse
 
@@ -216,7 +217,7 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
                   }
                 ]}
               >
-                <DatePicker showTime format={'YYYY-MM-DD HH:mm:ss'} />
+                <CustomDatePicker showTime />
               </Form.Item>
               <Form.Item
                 label='结束时间'
@@ -234,7 +235,7 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
                   }
                 ]}
               >
-                <DatePicker showTime format={'YYYY-MM-DD HH:mm:ss'} />
+                <CustomDatePicker showTime />
               </Form.Item>
             </>
           )}

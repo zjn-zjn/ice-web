@@ -46,7 +46,7 @@ interface ChildrenItem {
   children?: ChildrenItem[]
   parentId?: number
   nextId?: number
-  index?: number
+  index: number
   sonIds?: string
   timeType?: number
   start?: number

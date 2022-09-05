@@ -32,8 +32,7 @@ const Detail = () => {
         return {
           ...reset,
           showConf,
-          key: `${showConf?.nodeId}`,
-          disabled: item.isForward,
+          key: `${showConf?.nodeId}_${item.index}_${item.parentId}_${item.nextId}`,
           children: getTreeList([
             ...(item.forward ? [{ ...item.forward, isForward: true }] : []),
             ...children
@@ -79,6 +78,7 @@ const Detail = () => {
             message.error(err.msg || 'server error')
           })
         if (res?.ret === 0) {
+          run()
           message.success('success')
         } else {
           message.error(res?.msg || 'failed')
@@ -100,6 +100,7 @@ const Detail = () => {
             message.error(err.msg || 'server error')
           })
         if (res?.ret === 0) {
+          run()
           message.success('success')
         } else {
           message.error(res?.msg || 'failed')

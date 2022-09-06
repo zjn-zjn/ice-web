@@ -4,7 +4,7 @@ import { useRequest } from 'ahooks'
 import { TreeItem } from '../..'
 import { RelationNodeMap } from '../../constant'
 
-const nodeTypeOptions = [
+const relationTypeOptions = [
   { label: 'Relation', value: 1 },
   { label: 'Flow', value: 5 },
   { label: 'Result', value: 6 },
@@ -12,7 +12,7 @@ const nodeTypeOptions = [
   { label: '节点ID', value: 13 }
 ]
 
-const relationTypeOptions = [...RelationNodeMap].map((item) => ({
+const nodeTypeOptions = [...RelationNodeMap].map((item) => ({
   label: item[1],
   value: item[0]
 }))
@@ -72,7 +72,7 @@ const AddNodeModal = ({
     }
   )
 
-  const onNodeTypeChange = (value: number) => {
+  const onRelationTypeChange = (value: number) => {
     if (value !== 1 && value !== 13) {
       getClass(value)
     }
@@ -82,6 +82,7 @@ const AddNodeModal = ({
     form
       .validateFields()
       .then((values) => {
+        const { relationType, nodeType, ...others } = values
         const params = {
           app,
           iceId,
@@ -90,7 +91,8 @@ const AddNodeModal = ({
           selectId: selectedNode?.showConf?.nodeId,
           parentId: selectedNode?.parentId,
           nextId: selectedNode?.nextId,
-          ...values,
+          nodeType: relationType === 1 ? nodeType : relationType,
+          ...others,
           confName: values.confName && values.confName[0],
           index: selectedNode?.index
         }
@@ -120,32 +122,35 @@ const AddNodeModal = ({
           <Input />
         </Form.Item>
         <Form.Item
-          name='nodeType'
-          label='nodeType'
+          name='relationType'
+          label='relationType'
           rules={[{ required: true, message: '请选择节点类型' }]}
           initialValue={1}
         >
-          <Select options={nodeTypeOptions} onChange={onNodeTypeChange} />
+          <Select
+            options={relationTypeOptions}
+            onChange={onRelationTypeChange}
+          />
         </Form.Item>
         <Form.Item
           noStyle
-          shouldUpdate={(pre, next) => pre.nodeType !== next.nodeType}
+          shouldUpdate={(pre, next) => pre.relationType !== next.relationType}
         >
           {(form) => {
-            const nodeType = form.getFieldValue('nodeType')
+            const relationType = form.getFieldValue('relationType')
             return (
               <>
-                {nodeType === 1 && (
+                {relationType === 1 && (
                   <Form.Item
-                    name='relationType'
-                    label='relationType'
+                    name='nodeType'
+                    label='nodeType'
                     rules={[{ required: true, message: '请选择节点类型' }]}
                     initialValue={1}
                   >
-                    <Select options={relationTypeOptions} />
+                    <Select options={nodeTypeOptions} />
                   </Form.Item>
                 )}
-                {nodeType !== 1 && nodeType !== 13 && (
+                {relationType !== 1 && relationType !== 13 && (
                   <>
                     <Form.Item
                       name='confName'
@@ -168,7 +173,7 @@ const AddNodeModal = ({
                     </Form.Item>
                   </>
                 )}
-                {nodeType === 13 && (
+                {relationType === 13 && (
                   <Form.Item
                     name='multiplexIds'
                     label='节点ID(逗号分隔)'

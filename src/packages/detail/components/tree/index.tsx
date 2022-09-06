@@ -23,6 +23,7 @@ interface Props {
   selectedNode: TreeItem | undefined
   app: string
   iceId: string
+  address: string
 }
 
 const TreeArea = ({
@@ -31,7 +32,8 @@ const TreeArea = ({
   selectedNode,
   app,
   refresh,
-  iceId
+  iceId,
+  address
 }: Props) => {
   const initSelectRef = useRef(false)
   const [addExchangeNodeModalObj, setAddExchangeNodeModalObj] = useState({
@@ -122,6 +124,10 @@ const TreeArea = ({
     dropToGap: boolean
     node: TreeItem
   }) => {
+    // 非server 不可移动
+    if (!!address && address !== 'server') {
+      return
+    }
     // 前置节点不可移动
     if (dragNode.isForward) {
       return
@@ -136,7 +142,10 @@ const TreeArea = ({
         parentId: dragNode.parentId,
         selectId: dragNode.showConf.nodeId,
         index: dragNode.index,
-        moveTo: dragNode.parentId === node.parentId && node.index > dragNode.index ?  node.index : node.index + 1,
+        moveTo:
+          dragNode.parentId === node.parentId && node.index > dragNode.index
+            ? node.index
+            : node.index + 1,
         moveToParentId:
           dragNode.parentId !== node.parentId ? node.parentId : undefined
       }

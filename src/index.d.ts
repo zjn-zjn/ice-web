@@ -71,7 +71,7 @@ interface ShowConf {
   nodeName?: string
   confName?: string
   confField?: string
-  haveClientMeta?: boolean
+  haveMeta?: boolean
   nodeInfo?: NodeInfo
 }
 

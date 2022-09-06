@@ -3,7 +3,6 @@ import {
   Form,
   Input,
   Select,
-  DatePicker,
   Radio,
   Button,
   message,
@@ -246,7 +245,7 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
         <Form.Item label='反转' name='inverse'>
           <Radio.Group options={debugInverseOptions} />
         </Form.Item>
-        {!selectedNode?.showConf?.haveClientMeta ? (
+        {!selectedNode?.showConf?.haveMeta ? (
           <Form.Item label='配置Json' name='confField'>
             <Input.TextArea rows={8} />
           </Form.Item>

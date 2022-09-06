@@ -137,6 +137,7 @@ const Detail = () => {
           selectedNode={selectedNode}
           app={app}
           iceId={iceId}
+          address={address}
         />
         <Edit
           selectedNode={selectedNode}

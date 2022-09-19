@@ -1,5 +1,5 @@
 import apis from '../../apis'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Button, Modal, Form, Input, message } from 'antd'
 import { FormOutlined } from '@ant-design/icons'
 import { PlusOutlined } from '@ant-design/icons'
@@ -11,7 +11,13 @@ import './index.less'
 const AppList = () => {
   const history = useHistory()
   const [form] = useForm()
-  const [editModel, setEditModel] = useState({ type: 1, visible: false, name: '', info: '', id: 0 })
+  const [editModel, setEditModel] = useState({
+    type: 1,
+    visible: false,
+    name: '',
+    info: '',
+    id: 0
+  })
 
   const { data, run: getList } = useRequest<
     {
@@ -40,6 +46,17 @@ const AppList = () => {
     }
   )
 
+  useEffect(() => {
+    const { visible, type, ...others } = editModel
+    if (visible) {
+      if (type === 1) {
+        form.resetFields()
+      } else {
+        form.setFieldsValue(others)
+      }
+    }
+  }, [editModel])
+
   const openModal = (type: 1 | 2, name?: any, info?: any, id?: any) => {
     setEditModel({ type: type, visible: true, name: name, info: info, id: id })
   }
@@ -66,12 +83,20 @@ const AppList = () => {
       </Button>
       <div className='app-list'>
         {list.map((item: AppItem) => (
-          <div key={item.id} className='app-item' onClick={() => { linkToList(item.id) }}>
-            <div className="app-edit">
-              <FormOutlined onClick={(e: any) => {
-                e.stopPropagation()
-                return openModal(2, item.name, item.info, item.id)
-              }} />
+          <div
+            key={item.id}
+            className='app-item'
+            onClick={() => {
+              linkToList(item.id)
+            }}
+          >
+            <div className='app-edit'>
+              <FormOutlined
+                onClick={(e: any) => {
+                  e.stopPropagation()
+                  return openModal(2, item.name, item.info, item.id)
+                }}
+              />
             </div>
             <p>{item.name}</p>
             <p>app: {item.id} </p>
@@ -83,14 +108,13 @@ const AppList = () => {
         visible={editModel.visible}
         onCancel={closeModal}
         onOk={onOk}
-        title={editModel.type === 1 ? "新增" : "编辑"}
+        title={editModel.type === 1 ? '新增' : '编辑'}
         okText='确认'
         cancelText='取消'
         confirmLoading={loading}
       >
         <Form form={form}>
-          <Form.Item name='id' initialValue={editModel.id > 0 ? editModel.id : null} hidden={true}>
-          </Form.Item>
+          <Form.Item name='id' hidden={true} />
           <Form.Item label='名称' name='name' initialValue={editModel.name}>
             <Input />
           </Form.Item>

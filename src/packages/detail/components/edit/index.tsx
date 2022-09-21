@@ -153,7 +153,7 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
         }
         run(params)
       })
-      .catch(() => {})
+      .catch(() => { })
   }
 
   return (
@@ -204,9 +204,14 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
                 label='开始时间'
                 name='start'
                 dependencies={['timeType']}
+                hidden={
+                  [1, 6].includes(
+                    form.getFieldValue('timeType')
+                  )
+                }
                 rules={[
                   {
-                    required: [2, 5, 5, 7].includes(
+                    required: [5, 7].includes(
                       form.getFieldValue('timeType')
                     ),
                     validator: (rule, value) =>
@@ -222,9 +227,14 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
                 label='结束时间'
                 name='end'
                 dependencies={['timeType']}
+                hidden={
+                  [1, 5].includes(
+                    form.getFieldValue('timeType')
+                  )
+                }
                 rules={[
                   {
-                    required: [3, 4, 6, 7].includes(
+                    required: [6, 7].includes(
                       form.getFieldValue('timeType')
                     ),
                     validator: (rule, value) =>
@@ -245,29 +255,33 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
         <Form.Item label='反转' name='inverse'>
           <Radio.Group options={debugInverseOptions} />
         </Form.Item>
-        {!selectedNode?.showConf?.haveMeta ? (
-          <Form.Item label='配置Json' name='confField'>
-            <Input.TextArea rows={8} />
-          </Form.Item>
-        ) : (
-          <>
-            <Typography.Title level={4}>属性配置</Typography.Title>
-            {(selectedNode?.showConf?.nodeInfo?.iceFields || []).map(
-              (item, i) => (
-                <FieldItem item={item} key={i} />
-              )
-            )}
-            <Collapse>
-              <Panel header='hideFields' key='1' forceRender>
-                {(selectedNode?.showConf?.nodeInfo?.hideFields || []).map(
+        {[5, 6, 7].includes(selectedNode?.showConf?.nodeType || 0) ? (
+          !selectedNode?.showConf?.haveMeta ? (
+            <Form.Item label='配置Json' name='confField'>
+              <Input.TextArea rows={8} />
+            </Form.Item>
+          ) : (
+            (selectedNode?.showConf?.nodeInfo?.iceFields || []).length > 0 || (selectedNode?.showConf?.nodeInfo?.hideFields || []).length > 0 ? (
+              <>
+                <Typography.Title level={4}>属性配置</Typography.Title>
+                {(selectedNode?.showConf?.nodeInfo?.iceFields || []).map(
                   (item, i) => (
                     <FieldItem item={item} key={i} />
                   )
                 )}
-              </Panel>
-            </Collapse>
-          </>
-        )}
+                {(selectedNode?.showConf?.nodeInfo?.hideFields || []).length > 0 ? (
+                  <Collapse>
+                    <Panel header='其他属性' key='1' forceRender>
+                      {(selectedNode?.showConf?.nodeInfo?.hideFields || []).map(
+                        (item, i) => (
+                          <FieldItem item={item} key={i} />
+                        )
+                      )}
+                    </Panel>
+                  </Collapse>) : (<></>)}
+              </>) : (<></>)
+          )
+        ) : (<br />)}
       </Form>
       <div className='btn-wrap'>
         {isEdit ? (

@@ -48,8 +48,12 @@ interface Props {
 const FieldItem = ({ item }: { item: FieldItem }) => {
   return (
     <div className='filed-item'>
-      <div className='desc-item' hidden={item.name == null || item.name == ""}>字段名称：{item.name}</div>
-      <div className='desc-item' hidden={item.desc == null || item.desc == ""}>字段描述：{item.desc}</div>
+      <div className='desc-item' hidden={!item.name}>
+        字段名称：{item.name}
+      </div>
+      <div className='desc-item' hidden={!item.desc}>
+        字段描述：{item.desc}
+      </div>
       <div className='desc-item'>字段：{item.field}</div>
       <div className='desc-item'>
         <Tooltip title={item.type}>类型：{item.type}</Tooltip>
@@ -130,11 +134,12 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
     form
       .validateFields()
       .then((values) => {
+        const { confField, fields, ...others } = values
         const fieldsObj: { [key: string]: any } = {}
         Object.entries<{
           value: string | undefined
           isNull: boolean | undefined
-        }>(values.fields || {}).forEach((item) => {
+        }>(fields || {}).forEach((item) => {
           if (!!item[1].value || !!item[1].isNull) {
             fieldsObj[item[0]] = item[1].isNull ? null : item[1].value
           }
@@ -147,13 +152,15 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
           parentId: selectedNode?.parentId,
           nextId: selectedNode?.nextId,
           ...selectedNode?.showConf,
-          ...values,
+          ...others,
           confName: undefined,
-          confField: JSON.stringify(fieldsObj)
+          confField: !selectedNode?.showConf?.haveMeta
+            ? confField
+            : JSON.stringify(fieldsObj)
         }
         run(params)
       })
-      .catch(() => { })
+      .catch(() => {})
   }
 
   return (
@@ -166,14 +173,23 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
         <Form.Item label='名称' name='name'>
           <Input />
         </Form.Item>
-        <Form.Item label='节点名称' hidden={(selectedNode?.showConf?.nodeInfo?.name || "") == ""}>
+        <Form.Item
+          label='节点名称'
+          hidden={(selectedNode?.showConf?.nodeInfo?.name || '') == ''}
+        >
           {selectedNode?.showConf?.nodeInfo?.name}
         </Form.Item>
-        <Form.Item label='节点描述' hidden={(selectedNode?.showConf?.nodeInfo?.desc || "") == ""}>
+        <Form.Item
+          label='节点描述'
+          hidden={(selectedNode?.showConf?.nodeInfo?.desc || '') == ''}
+        >
           {selectedNode?.showConf?.nodeInfo?.desc}
         </Form.Item>
         {/* TODO */}
-        <Form.Item label='节点类' hidden={![5, 6, 7].includes(selectedNode?.showConf?.nodeType || 0)}>
+        <Form.Item
+          label='节点类'
+          hidden={![5, 6, 7].includes(selectedNode?.showConf?.nodeType || 0)}
+        >
           {selectedNode?.showConf?.confName}
           {/* {!selectedNode?.isRoot && (
             <Button type='primary' size='small' style={{ marginLeft: 5 }}>
@@ -204,16 +220,10 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
                 label='开始时间'
                 name='start'
                 dependencies={['timeType']}
-                hidden={
-                  [1, 6].includes(
-                    form.getFieldValue('timeType')
-                  )
-                }
+                hidden={[1, 6].includes(form.getFieldValue('timeType'))}
                 rules={[
                   {
-                    required: [5, 7].includes(
-                      form.getFieldValue('timeType')
-                    ),
+                    required: [5, 7].includes(form.getFieldValue('timeType')),
                     validator: (rule, value) =>
                       value || !rule.required
                         ? Promise.resolve()
@@ -227,16 +237,10 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
                 label='结束时间'
                 name='end'
                 dependencies={['timeType']}
-                hidden={
-                  [1, 5].includes(
-                    form.getFieldValue('timeType')
-                  )
-                }
+                hidden={[1, 5].includes(form.getFieldValue('timeType'))}
                 rules={[
                   {
-                    required: [6, 7].includes(
-                      form.getFieldValue('timeType')
-                    ),
+                    required: [6, 7].includes(form.getFieldValue('timeType')),
                     validator: (rule, value) =>
                       value || !rule.required
                         ? Promise.resolve()
@@ -260,28 +264,36 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
             <Form.Item label='配置Json' name='confField'>
               <Input.TextArea rows={8} />
             </Form.Item>
+          ) : (selectedNode?.showConf?.nodeInfo?.iceFields || []).length > 0 ||
+            (selectedNode?.showConf?.nodeInfo?.hideFields || []).length > 0 ? (
+            <>
+              <Typography.Title level={4}>属性配置</Typography.Title>
+              {(selectedNode?.showConf?.nodeInfo?.iceFields || []).map(
+                (item, i) => (
+                  <FieldItem item={item} key={i} />
+                )
+              )}
+              {(selectedNode?.showConf?.nodeInfo?.hideFields || []).length >
+              0 ? (
+                <Collapse>
+                  <Panel header='其他属性' key='1' forceRender>
+                    {(selectedNode?.showConf?.nodeInfo?.hideFields || []).map(
+                      (item, i) => (
+                        <FieldItem item={item} key={i} />
+                      )
+                    )}
+                  </Panel>
+                </Collapse>
+              ) : (
+                <></>
+              )}
+            </>
           ) : (
-            (selectedNode?.showConf?.nodeInfo?.iceFields || []).length > 0 || (selectedNode?.showConf?.nodeInfo?.hideFields || []).length > 0 ? (
-              <>
-                <Typography.Title level={4}>属性配置</Typography.Title>
-                {(selectedNode?.showConf?.nodeInfo?.iceFields || []).map(
-                  (item, i) => (
-                    <FieldItem item={item} key={i} />
-                  )
-                )}
-                {(selectedNode?.showConf?.nodeInfo?.hideFields || []).length > 0 ? (
-                  <Collapse>
-                    <Panel header='其他属性' key='1' forceRender>
-                      {(selectedNode?.showConf?.nodeInfo?.hideFields || []).map(
-                        (item, i) => (
-                          <FieldItem item={item} key={i} />
-                        )
-                      )}
-                    </Panel>
-                  </Collapse>) : (<></>)}
-              </>) : (<></>)
+            <></>
           )
-        ) : (<br />)}
+        ) : (
+          <br />
+        )}
       </Form>
       <div className='btn-wrap'>
         {isEdit ? (

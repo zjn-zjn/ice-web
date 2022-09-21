@@ -48,8 +48,8 @@ interface Props {
 const FieldItem = ({ item }: { item: FieldItem }) => {
   return (
     <div className='filed-item'>
-      <div className='desc-item'>名称：{item.name}</div>
-      <div className='desc-item'>描述：{item.desc}</div>
+      <div className='desc-item' hidden={item.name == null || item.name == ""}>字段名称：{item.name}</div>
+      <div className='desc-item' hidden={item.desc == null || item.desc == ""}>字段描述：{item.desc}</div>
       <div className='desc-item'>字段：{item.field}</div>
       <div className='desc-item'>
         <Tooltip title={item.type}>类型：{item.type}</Tooltip>
@@ -166,14 +166,14 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
         <Form.Item label='名称' name='name'>
           <Input />
         </Form.Item>
-        <Form.Item label='节点名称'>
+        <Form.Item label='节点名称' hidden={(selectedNode?.showConf?.nodeInfo?.name || "") == ""}>
           {selectedNode?.showConf?.nodeInfo?.name}
         </Form.Item>
-        <Form.Item label='节点描述'>
+        <Form.Item label='节点描述' hidden={(selectedNode?.showConf?.nodeInfo?.desc || "") == ""}>
           {selectedNode?.showConf?.nodeInfo?.desc}
         </Form.Item>
         {/* TODO */}
-        <Form.Item label='节点类'>
+        <Form.Item label='节点类' hidden={![5, 6, 7].includes(selectedNode?.showConf?.nodeType || 0)}>
           {selectedNode?.showConf?.confName}
           {/* {!selectedNode?.isRoot && (
             <Button type='primary' size='small' style={{ marginLeft: 5 }}>

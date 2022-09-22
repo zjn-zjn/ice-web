@@ -56,7 +56,9 @@ const FieldItem = ({ item }: { item: FieldItem }) => {
       </div>
       <div className='desc-item'>字段：{item.field}</div>
       <div className='desc-item'>
-        <Tooltip title={item.type}>类型：{item.type.substring(item.type.lastIndexOf(".") + 1)}</Tooltip>
+        <Tooltip title={item.type}>
+          类型：{item.type.substring(item.type.lastIndexOf('.') + 1)}
+        </Tooltip>
       </div>
       <Space>
         <Form.Item label='值' name={['fields', item.field, 'value']}>

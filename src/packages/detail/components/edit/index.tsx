@@ -37,12 +37,12 @@ const FieldItem = ({ item }: { item: FieldItem }) => {
   return (
     <div className='filed-item'>
       <div className='desc-item' hidden={!item.name}>
-        字段名称：{item.name}
+        属性名称：{item.name}
       </div>
       <div className='desc-item' hidden={!item.desc}>
-        字段描述：{item.desc}
+        属性描述：{item.desc}
       </div>
-      <div className='desc-item'>字段：{item.field}</div>
+      <div className='desc-item'>属性：{item.field}</div>
       <div className='desc-item'>
         <Tooltip title={item.type}>
           类型：{item.type.substring(item.type.lastIndexOf('.') + 1)}
@@ -269,7 +269,9 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
           ) : (selectedNode?.showConf?.nodeInfo?.iceFields || []).length > 0 ||
             (selectedNode?.showConf?.nodeInfo?.hideFields || []).length > 0 ? (
             <>
-              <Typography.Title level={4}>属性配置</Typography.Title>
+              <Tooltip title='值为空则使用属性默认值，勾选null将设置属性值为null'>
+                <Typography.Title level={4}>属性配置</Typography.Title>
+              </Tooltip>
               {(selectedNode?.showConf?.nodeInfo?.iceFields || []).map(
                 (item, i) => (
                   <FieldItem item={item} key={i} />

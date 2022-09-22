@@ -93,7 +93,7 @@ const AddNodeModal = ({
           nextId: selectedNode?.nextId,
           nodeType: relationType === 1 ? nodeType : relationType,
           ...others,
-          confName: values.confName && values.confName[0],
+          confName: values.confName,
           index: selectedNode?.index
         }
         addNode(params)
@@ -123,7 +123,7 @@ const AddNodeModal = ({
         </Form.Item>
         <Form.Item
           name='relationType'
-          label='relationType'
+          label='节点类型'
           rules={[{ required: true, message: '请选择节点类型' }]}
           initialValue={1}
         >
@@ -143,7 +143,7 @@ const AddNodeModal = ({
                 {relationType === 1 && (
                   <Form.Item
                     name='nodeType'
-                    label='nodeType'
+                    label='关系类型'
                     rules={[{ required: true, message: '请选择节点类型' }]}
                     initialValue={1}
                   >
@@ -154,16 +154,19 @@ const AddNodeModal = ({
                   <>
                     <Form.Item
                       name='confName'
-                      label='confName'
-                      rules={[
-                        { required: true, message: '请选择/输入confName' }
-                      ]}
+                      label='叶子节点'
+                      rules={[{ required: true, message: '请选择/输入节点类' }]}
                     >
                       <Select
-                        mode='tags'
-                        maxTagCount={1}
+                        // mode='tags'
+                        showSearch
+                        // maxTagCount={1}
+                        optionFilterProp='label'
                         options={(data?.data || []).map((item) => ({
-                          label: item.shortName,
+                          label:
+                            item.fullName.substring(
+                              item.fullName.lastIndexOf('.') + 1
+                            ) + (item.name ? '(' + item.name + ')' : ''),
                           value: item.fullName
                         }))}
                       />

@@ -81,7 +81,7 @@ interface ShowConf {
 interface ClassItem {
   count: number
   fullName: string
-  shortName: string
+  name: string
 }
 
 /**

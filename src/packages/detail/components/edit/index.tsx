@@ -3,7 +3,6 @@ import {
   Form,
   Input,
   Select,
-  Radio,
   Button,
   message,
   Typography,
@@ -23,18 +22,7 @@ const TimeTypeOptions = [
   { label: '无时间限制', value: 1 },
   { label: '大于开始时间', value: 5 },
   { label: '小于结束时间', value: 6 },
-  { label: '在开始时间与结束时间之内', value: 7 }
-]
-
-const debugInverseOptions = [
-  {
-    label: 'true',
-    value: true
-  },
-  {
-    label: 'false',
-    value: false
-  }
+  { label: '开始与结束时间之内', value: 7 }
 ]
 
 interface Props {
@@ -255,12 +243,24 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
             </>
           )}
         </Form.Item>
-        <Form.Item label='debug' name='debug'>
-          <Radio.Group options={debugInverseOptions} />
-        </Form.Item>
-        <Form.Item label='反转' name='inverse'>
-          <Radio.Group options={debugInverseOptions} />
-        </Form.Item>
+        <Space size={50}>
+          <Form.Item
+            label='记录'
+            name='debug'
+            valuePropName='checked'
+            initialValue={selectedNode?.showConf?.debug}
+          >
+            <Checkbox></Checkbox>
+          </Form.Item>
+          <Form.Item
+            label='反转'
+            name='inverse'
+            valuePropName='checked'
+            initialValue={selectedNode?.showConf?.inverse}
+          >
+            <Checkbox></Checkbox>
+          </Form.Item>
+        </Space>
         {[5, 6, 7].includes(selectedNode?.showConf?.nodeType || 0) ? (
           !selectedNode?.showConf?.haveMeta ? (
             <Form.Item label='配置Json' name='confField'>

@@ -30,7 +30,7 @@ const ExportModal = ({ visible, closeModal, iceId, pushId }: Props) => {
   }
 
   return (
-    <Modal footer={null} onCancel={closeModal} title='导出' visible={visible}>
+    <Modal footer={null} onCancel={closeModal} title='导出' open={visible}>
       <Input.TextArea
         rows={20}
         cols={10}

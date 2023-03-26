@@ -109,7 +109,7 @@ const AddNodeModal = ({
           ? '转换节点'
           : `添加${modalType === 'front' ? '前置节点' : '子节点'}`
       }
-      visible={visible}
+      open={visible}
       onOk={confirm}
       confirmLoading={loading}
       width={600}

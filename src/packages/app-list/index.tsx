@@ -105,7 +105,7 @@ const AppList = () => {
         ))}
       </div>
       <Modal
-        visible={editModel.visible}
+        open={editModel.visible}
         onCancel={closeModal}
         onOk={onOk}
         title={editModel.type === 1 ? '新增' : '编辑'}

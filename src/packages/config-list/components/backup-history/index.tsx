@@ -159,7 +159,7 @@ const BackupHistory = ({
     <Modal
       onCancel={closeModal}
       title='备份历史'
-      visible={visible}
+      open={visible}
       footer={null}
       width={900}
     >

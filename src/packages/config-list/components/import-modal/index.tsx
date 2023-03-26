@@ -32,7 +32,7 @@ const ImportModal = ({ visible, closeModal }: Props) => {
     <Modal
       onCancel={closeModal}
       title='导入'
-      visible={visible}
+      open={visible}
       onOk={confirm}
       confirmLoading={loading}
     >

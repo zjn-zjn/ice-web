@@ -127,12 +127,10 @@ const Common = () => {
             hideAdd
             type='editable-card'
             activeKey={activeTab.key}
+            items={tabList}
             onChange={onTabChange}
             onEdit={onTabEdit}
           >
-            {tabList.map((tab) => (
-              <Tabs.TabPane tab={tab.label} key={tab.key} />
-            ))}
           </Tabs>
         </div>
         <Content className='content'>

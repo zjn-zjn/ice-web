@@ -47,7 +47,7 @@ const BackupModal = ({ visible, closeModal, app, iceId }: Props) => {
     <Modal
       onCancel={closeModal}
       title='备份'
-      visible={visible}
+      open={visible}
       onOk={confirm}
       confirmLoading={loading}
     >

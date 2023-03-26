@@ -64,7 +64,7 @@ const EditAddModal = ({
     <Modal
       onCancel={closeModal}
       title={currentItem ? '编辑ICE' : '新增ICE'}
-      visible={visible}
+      open={visible}
       onOk={confirm}
       confirmLoading={loading}
     >

@@ -143,11 +143,11 @@ const TreeArea = ({
         selectId: dragNode.showConf.nodeId,
         index: dragNode.index,
         moveTo:
-          dragNode.parentId === node.parentId && node.index > dragNode.index
+        node.dragOver && node.showConf.nodeType <= 4 ? 0:(dragNode.parentId === node.parentId && node.index > dragNode.index
             ? node.index
-            : node.index + 1,
+            : node.index + 1),
         moveToParentId:
-          dragNode.parentId !== node.parentId ? node.parentId : undefined
+          node.dragOver && node.showConf.nodeType <= 4 ? node.showConf.nodeId : (dragNode.parentId !== node.parentId ? node.parentId : undefined)
       }
       apis
         .editConf(params)

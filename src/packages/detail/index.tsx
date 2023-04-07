@@ -35,8 +35,9 @@ const Detail = () => {
           key: `${showConf?.nodeId}_${item.index}_${item.parentId}_${item.nextId}`,
           children: getTreeList([
             ...(item.forward ? [{ ...item.forward, isForward: true }] : []),
-            ...children
-          ])
+            ...children,
+          ]),
+          title: '',
         }
       }),
     []

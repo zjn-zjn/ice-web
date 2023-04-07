@@ -74,6 +74,7 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
       manual: true,
       onSuccess: (res: any) => {
         if (res?.ret === 0) {
+          message.success('success')
           setIsEdit(false)
           refresh()
         } else {

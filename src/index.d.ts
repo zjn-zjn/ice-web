@@ -57,6 +57,8 @@ interface ChildrenItem {
   isForward?: boolean
   isRoot?: boolean
   disabled?: boolean
+  //组件字段
+  dragOver?:boolean
 }
 
 /**

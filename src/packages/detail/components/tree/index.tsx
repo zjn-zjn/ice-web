@@ -170,12 +170,13 @@ const TreeArea = ({
       <div className='tree-wrap'>
         {treeList.length ? (
           <Tree<TreeItem>
-            draggable
+            draggable = {{ icon: false, nodeDraggable: () => true }}
             onDrop={moveNode}
             treeData={treeList}
             showLine
             defaultExpandAll
             blockNode
+            expandAction = {false}
             defaultSelectedKeys={[treeList[0].key]}
             onSelect={onselectedNode}
             selectedKeys={selectedNode?.key ? [selectedNode.key] : []}

@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react'
 import { useRequest } from 'ahooks'
 import apis from '../../../../apis'
 import { CustomDatePicker } from '../../../../components'
+import TextArea from 'antd/es/input/TextArea'
 
 const { Panel } = Collapse
 
@@ -49,8 +50,8 @@ const FieldItem = ({ item }: { item: FieldItem }) => {
         </Tooltip>
       </div>
       <Space>
-        <Form.Item label='值' name={['fields', item.field, 'value']}>
-          <Input />
+        <Form.Item label='值' name={['fields', item.field, 'value']} initialValue={item.value}>
+          <TextArea />
         </Form.Item>
         <Form.Item
           name={['fields', item.field, 'isNull']}
@@ -92,23 +93,6 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
   }, [selectedNode])
 
   const setFormFields = () => {
-    let fields: {
-      [key: string]: {
-        value: string | undefined
-        isNull: boolean | undefined
-      }
-    } = {}
-    try {
-      const fieldsObj = JSON.parse(selectedNode?.showConf?.confField || '{}')
-      Object.keys(fieldsObj).forEach((key) => {
-        fields[key] = {
-          value: fieldsObj[key] === null ? '' : fieldsObj[key],
-          isNull: fieldsObj[key] === null
-        }
-      })
-    } catch (err) {
-      console.log(err)
-    }
     form.setFieldsValue({
       name: selectedNode?.showConf?.nodeName,
       timeType: selectedNode?.timeType || 1,
@@ -117,7 +101,6 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
       debug: selectedNode?.showConf?.debug ?? true,
       inverse: selectedNode?.showConf?.inverse ?? false,
       confField: selectedNode?.showConf?.confField,
-      fields
     })
   }
 
@@ -162,7 +145,7 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
         disabled={(!!address && address !== 'server') || !isEdit}
       >
         <Form.Item label='名称' name='name'>
-          <Input />
+          <Input maxLength={50}/>
         </Form.Item>
         <Form.Item
           label='节点名称'

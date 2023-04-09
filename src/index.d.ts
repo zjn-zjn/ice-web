@@ -106,5 +106,6 @@ interface FieldItem {
   type: string
   name?: string
   desc?: string
-  valueNull?: boolean
+  value: string
+  valueNull: boolean
 }

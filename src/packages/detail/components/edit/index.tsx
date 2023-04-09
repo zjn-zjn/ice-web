@@ -50,7 +50,7 @@ const FieldItem = ({ item }: { item: FieldItem }) => {
         </Tooltip>
       </div>
       <Space>
-        <Form.Item label='值' name={['fields', item.field, 'value']} initialValue={item.value}>
+        <Form.Item label='值' name={['fields', item.field, 'value']}>
           <TextArea />
         </Form.Item>
         <Form.Item
@@ -93,6 +93,24 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
   }, [selectedNode])
 
   const setFormFields = () => {
+    let fields: {
+      [key: string]: {
+        value: string | undefined
+        isNull: boolean | undefined
+      }
+    } = {}
+    selectedNode?.showConf?.nodeInfo?.iceFields?.forEach((item) => {
+      fields[item.field] = {
+        value: item.value === null ? '' : (item.type === 'java.lang.String'?item.value:JSON.stringify(item.value)),
+        isNull: item.valueNull
+      }
+    })
+    selectedNode?.showConf?.nodeInfo?.hideFields?.forEach((item) => {
+      fields[item.field] = {
+        value: item.value === null ? '' : (item.type === 'java.lang.String'?item.value:JSON.stringify(item.value)),
+        isNull: item.valueNull
+      }
+    })
     form.setFieldsValue({
       name: selectedNode?.showConf?.nodeName,
       timeType: selectedNode?.timeType || 1,
@@ -101,6 +119,7 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
       debug: selectedNode?.showConf?.debug ?? true,
       inverse: selectedNode?.showConf?.inverse ?? false,
       confField: selectedNode?.showConf?.confField,
+      fields
     })
   }
 

@@ -94,7 +94,7 @@ interface NodeInfo {
   desc: string
   name: string
   type: string
-  iceFields: FieldItem[]
+  iceFields?: FieldItem[]
   hideFields?: FieldItem[]
 }
 

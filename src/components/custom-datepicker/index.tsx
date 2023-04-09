@@ -1,5 +1,5 @@
 import { FC } from 'react'
-import moment from 'moment'
+import dayjs from 'dayjs'
 import { DatePicker, DatePickerProps } from 'antd'
 
 const CustomDatePicker: FC<DatePickerProps> = ({
@@ -18,7 +18,7 @@ const CustomDatePicker: FC<DatePickerProps> = ({
       format='YYYY-MM-DD HH:mm:ss'
       {...otherProps}
       onChange={dateOnChange}
-      value={value && moment(value)}
+      value={value && dayjs(value)}
     />
   )
 }

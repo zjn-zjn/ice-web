@@ -196,12 +196,12 @@ const TreeArea = ({
                 <span>{node?.showConf?.labelName}</span>
                 <span className='tree-edit-wrap'>
                   {!!RelationNodeMap.get(node.showConf.nodeType) && (
-                    <Tooltip title="添加子节点" color={'blue'} key={'blue'}>
+                    <Tooltip title="添加子节点" color={'blue'}>
                       <PlusCircleTwoTone onClick={addChildNode} />
                     </Tooltip>
                   )}
                   {!node.forward && (
-                    <Tooltip title="添加前置节点" color={'#f50'} key={'#f50'}>
+                    <Tooltip title="添加前置节点" color={'#f50'}>
                       <PlusSquareTwoTone
                         twoToneColor={'#f50'}
                         style={!!RelationNodeMap.get(node.showConf.nodeType) ? { marginLeft: 10 }:{ marginLeft: 0 }}
@@ -209,14 +209,14 @@ const TreeArea = ({
                       />
                     </Tooltip>
                   )}
-                  <Tooltip title="转换节点" color={'cyan'} key={'cyan'}>
+                  <Tooltip title="转换节点" color={'cyan'}>
                     <ControlTwoTone
                       style={!!RelationNodeMap.get(node.showConf.nodeType) || !node.forward? { marginLeft: 10 } : { marginLeft: 0 }}
                       onClick={exchangeNode}
                     />
                   </Tooltip>
                   {!node.isRoot && (
-                    <Tooltip title="删除节点" color={'red'} key={'red'}>
+                    <Tooltip title="删除节点" color={'red'}>
                       <DeleteOutlined
                         className='action'
                         style={{ marginLeft: 10, color: 'red' }}

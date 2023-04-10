@@ -58,9 +58,7 @@ const FieldItem = ({ item }: { item: FieldItem }) => {
           valuePropName='checked'
           initialValue={item.valueNull}
         >
-          <Tooltip title="值为null则使用属性默认值" color={'blue'} key={'blue'}>
-            <Checkbox>null</Checkbox>
-          </Tooltip>
+        <Checkbox>null</Checkbox>
         </Form.Item>
       </Space>
     </div>

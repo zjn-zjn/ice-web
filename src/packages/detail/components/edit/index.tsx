@@ -200,7 +200,7 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
             </Button>
           )} */}
         </Form.Item>
-        <Form.Item label='时间类型' name='timeType' required>
+        <Form.Item label='生效时间' name='timeType' required>
           <Select options={TimeTypeOptions} />
         </Form.Item>
         <Form.Item
@@ -276,7 +276,7 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
           ) : (selectedNode?.showConf?.nodeInfo?.iceFields || []).length > 0 ||
             (selectedNode?.showConf?.nodeInfo?.hideFields || []).length > 0 ? (
             <>
-            <Typography.Title level={4}>属性配置</Typography.Title>
+            <Typography.Title level={5}>属性配置</Typography.Title>
               {(selectedNode?.showConf?.nodeInfo?.iceFields || []).map(
                 (item, i) => (
                   <FieldItem item={item} key={i} />

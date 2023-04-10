@@ -32,7 +32,7 @@ const Detail = () => {
         return {
           ...reset,
           showConf,
-          key: `${showConf?.nodeId}_${item.index}_${item.parentId}_${item.nextId}`,
+          key: `${showConf?.uniqueKey}`,
           children: getTreeList([
             ...(item.forward ? [{ ...item.forward, isForward: true }] : []),
             ...children,

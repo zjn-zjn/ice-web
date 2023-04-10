@@ -65,6 +65,7 @@ interface ChildrenItem {
  * ShowConf
  */
 interface ShowConf {
+  uniqueKey: string
   debug: boolean
   inverse: boolean
   labelName: string

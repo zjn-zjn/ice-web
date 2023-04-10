@@ -38,12 +38,12 @@ const FieldItem = ({ item }: { item: FieldItem }) => {
   return (
     <div className='filed-item'>
       <div className='desc-item' hidden={!item.name}>
-        属性名称：{item.name}
+        名称：{item.name}
       </div>
       <div className='desc-item' hidden={!item.desc}>
-        属性描述：{item.desc}
+        描述：{item.desc}
       </div>
-      <div className='desc-item'>属性：{item.field}</div>
+      <div className='desc-item'>字段：{item.field}</div>
       <div className='desc-item'>
         <Tooltip title={item.type}>
           类型：{item.type.substring(item.type.lastIndexOf('.') + 1)}
@@ -58,7 +58,9 @@ const FieldItem = ({ item }: { item: FieldItem }) => {
           valuePropName='checked'
           initialValue={item.valueNull}
         >
-          <Checkbox>null</Checkbox>
+          <Tooltip title="值为null则使用属性默认值" color={'blue'} key={'blue'}>
+            <Checkbox>null</Checkbox>
+          </Tooltip>
         </Form.Item>
       </Space>
     </div>
@@ -255,14 +257,16 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
           >
             <Checkbox></Checkbox>
           </Form.Item>
-          <Form.Item
-            label='反转'
-            name='inverse'
-            valuePropName='checked'
-            initialValue={selectedNode?.showConf?.inverse}
-          >
-            <Checkbox></Checkbox>
-          </Form.Item>
+          {![0,7].includes(selectedNode?.showConf?.nodeType || 0)  && (
+              <Form.Item
+              label='反转'
+              name='inverse'
+              valuePropName='checked'
+              initialValue={selectedNode?.showConf?.inverse}
+            >
+              <Checkbox></Checkbox>
+            </Form.Item>
+          )}
         </Space>
         {[5, 6, 7].includes(selectedNode?.showConf?.nodeType || 0) ? (
           !selectedNode?.showConf?.haveMeta ? (
@@ -272,9 +276,7 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
           ) : (selectedNode?.showConf?.nodeInfo?.iceFields || []).length > 0 ||
             (selectedNode?.showConf?.nodeInfo?.hideFields || []).length > 0 ? (
             <>
-              <Tooltip title='值为空则使用属性默认值，勾选null将设置属性值为null'>
-                <Typography.Title level={4}>属性配置</Typography.Title>
-              </Tooltip>
+            <Typography.Title level={4}>属性配置</Typography.Title>
               {(selectedNode?.showConf?.nodeInfo?.iceFields || []).map(
                 (item, i) => (
                   <FieldItem item={item} key={i} />
@@ -282,7 +284,7 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
               )}
               {(selectedNode?.showConf?.nodeInfo?.hideFields || []).length >
               0 ? (
-                <Collapse>
+                <Collapse defaultActiveKey={(selectedNode?.showConf?.nodeInfo?.iceFields || []).length > 0?['0']:['1']}>
                   <Panel header='其他属性' key='1' forceRender>
                     {(selectedNode?.showConf?.nodeInfo?.hideFields || []).map(
                       (item, i) => (

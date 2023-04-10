@@ -170,7 +170,9 @@ const TreeArea = ({
       <div className='tree-wrap'>
         {treeList.length ? (
           <Tree<TreeItem>
-            draggable = {{ icon: false, nodeDraggable: () => true }}
+            draggable = {{ icon: false, nodeDraggable: (node) => (
+                !['r','f'].includes(String(node.key).charAt(String(node.key).length - 1))
+              )}}
             onDrop={moveNode}
             treeData={treeList}
             showLine

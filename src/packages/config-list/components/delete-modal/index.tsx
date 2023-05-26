@@ -7,7 +7,7 @@ interface Props {
   visible: boolean
   closeModal: () => void
   getConfigList: () => void
-  iceId: number
+  iceId: string | number
   app: string
 }
 

@@ -6,18 +6,26 @@ import { useEffect } from 'react'
 interface Props {
   visible: boolean
   closeModal: () => void
+  getConfigList: () => void
+  iceId: number
   app: string
-  iceId: string | number
 }
 
-const BackupModal = ({ visible, closeModal, app, iceId }: Props) => {
+const DeleteModal = ({
+  visible,
+  closeModal,
+  getConfigList,
+  iceId,
+  app
+}: Props) => {
   const [form] = Form.useForm()
   const { run, loading } = useRequest(
-    (params: object) => apis.pushConf(params),
+    (params: object) => apis.iceEdit(params),
     {
       manual: true,
       onSuccess: (res: any) => {
         if (res?.ret === 0) {
+          getConfigList()
           closeModal()
           message.success('success')
         } else {
@@ -30,35 +38,24 @@ const BackupModal = ({ visible, closeModal, app, iceId }: Props) => {
     }
   )
 
-  useEffect(() => {
-    if (!visible) {
-      form.resetFields()
-    }
-  }, [visible])
-
   const confirm = () => {
     run({
       app,
-      iceId,
-      ...form.getFieldsValue()
+      id: iceId,
+      status: 0
     })
   }
 
   return (
     <Modal
       onCancel={closeModal}
-      title='备份'
-      visible={visible}
+      title={`确认删除<${iceId}>吗？`}
+      open={visible}
       onOk={confirm}
       confirmLoading={loading}
     >
-      <Form form={form}>
-        <Form.Item name='reason' label='备注'>
-          <Input />
-        </Form.Item>
-      </Form>
     </Modal>
   )
 }
 
-export default BackupModal
+export default DeleteModal

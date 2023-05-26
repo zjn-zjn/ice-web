@@ -15,6 +15,7 @@ const ImportModal = ({ visible, closeModal }: Props) => {
     onSuccess: (res: any) => {
       if (res?.ret === 0) {
         closeModal()
+        message.success('success')
       } else {
         message.error(res?.msg || 'failed')
       }

@@ -6,6 +6,7 @@ import apis from '../../apis'
 import { useRequest } from 'ahooks'
 import ExportModal from './components/export-modal'
 import EditAddModal from './components/edit-add-modal'
+import DeleteModal from './components/delete-modal'
 import BackupModal from './components/backup-modal'
 import BackupHistory from './components/backup-history'
 import ImportModal from './components/import-modal'
@@ -31,6 +32,10 @@ const ConfigList = () => {
   const [pageSize, setPageSize] = useState(20)
   const [importVisible, setImportVisible] = useState(false)
   const [backupObj, setBackupObj] = useState<ModalState>({
+    visible: false,
+    iceId: ''
+  })
+  const [deleteObj, setDeleteObj] = useState<ModalState>({
     visible: false,
     iceId: ''
   })
@@ -117,6 +122,9 @@ const ConfigList = () => {
           <Button type='link' onClick={() => openExportModal(record.id)}>
             导出
           </Button>
+          <Button type='link' onClick={() => openDeleteModal(record.id)}>
+            删除
+          </Button>
         </>
       )
     }
@@ -135,6 +143,13 @@ const ConfigList = () => {
 
   const openPushModal = (id: number) => {
     setBackupObj({
+      visible: true,
+      iceId: id
+    })
+  }
+
+  const openDeleteModal = (id: number) => {
+    setDeleteObj({
       visible: true,
       iceId: id
     })
@@ -246,6 +261,15 @@ const ConfigList = () => {
         visible={importVisible}
         closeModal={() => {
           setImportVisible(false)
+        }}
+      />
+      <DeleteModal
+        app={id}
+        iceId={deleteObj.iceId}
+        visible={deleteObj.visible}
+        getConfigList={getConfigList}
+        closeModal={() => {
+          setDeleteObj((pre) => ({ ...pre, visible: false }))
         }}
       />
     </Space>

@@ -27,6 +27,7 @@ const EditAddModal = ({
         if (res?.ret === 0) {
           getConfigList()
           closeModal()
+          message.success('success')
         } else {
           message.error(res?.msg || 'failed')
         }

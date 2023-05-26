@@ -58,6 +58,7 @@ const BackupHistory = ({
         if (res?.ret === 0) {
           closeModal()
           getConfigList()
+          message.success('success')
         } else {
           message.error(res?.data?.msg || 'failed')
         }

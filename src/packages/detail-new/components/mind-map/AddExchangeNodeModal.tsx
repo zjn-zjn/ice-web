@@ -20,23 +20,23 @@ const nodeTypeOptions = [...RelationNodeMap].map((item) => ({
 
 interface Props {
   visible: boolean
-  onCancel: () => void
-  onOk: () => void
+  closeModal: () => void
   modalType: string
   app: string
   iceId: string
   address: string
-  currentNode: TreeItem | undefined
+  selectedNode: TreeItem | undefined
+  refresh: () => void
 }
 
 const AddExchangeNodeModal = ({
   visible,
-  onCancel,
-  onOk,
+  closeModal,
   modalType,
   app,
   iceId,
-  currentNode
+  selectedNode,
+  refresh
 }: Props) => {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
@@ -70,20 +70,34 @@ const AddExchangeNodeModal = ({
         app,
         iceId,
         editType: modalType === 'exchange' ? 5 : modalType === 'front' ? 4 : 1,
-        parentId: currentNode?.parentId,
-        selectId: currentNode?.showConf.nodeId,
-        index: currentNode?.index,
+        parentId: selectedNode?.parentId,
+        selectId: selectedNode?.showConf.nodeId,
+        nextId: selectedNode?.nextId,
+        index: selectedNode?.index,
         nodeType: values.nodeType,
         name: values.name,
         clazz: values.clazz,
         field: values.field,
-        relationType: values.relationType
+        relationType: values.relationType,
+        confName: values.confName,
+        confField: values.confField,
+        multiplexIds: values.multiplexIds
       }
+      console.log('AddExchangeNodeModal editConf params:', params)
       await apis.editConf(params)
-      onOk()
+      console.log('AddExchangeNodeModal editConf success')
+      await new Promise(resolve => setTimeout(resolve, 100))
+      console.log('AddExchangeNodeModal calling refresh')
+      refresh()
+      console.log('AddExchangeNodeModal refresh done')
       message.success('success')
+      console.log('AddExchangeNodeModal calling closeModal')
+      closeModal()
+      console.log('AddExchangeNodeModal closeModal done')
     } catch (err: any) {
+      console.error('AddExchangeNodeModal error:', err)
       if (err.errorFields) {
+        console.log('AddExchangeNodeModal form validation error:', err.errorFields)
         return
       }
       message.error(err.msg || 'server error')
@@ -94,7 +108,7 @@ const AddExchangeNodeModal = ({
 
   return (
     <Modal
-      onCancel={onCancel}
+      onCancel={closeModal}
       title={
         modalType === 'exchange'
           ? '转换节点'

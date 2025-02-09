@@ -48,9 +48,9 @@ const Detail = () => {
 
   const treeList = useMemo(() => {
     const root = data?.root
-    console.log('root:', root)
+    // console.log('root:', root)
     const result = root ? getTreeList([{ ...root, isRoot: true }]) : []
-    console.log('treeList:', JSON.stringify(result, null, 2))
+    // console.log('treeList:', JSON.stringify(result, null, 2))
     return result
   }, [data?.root])
 

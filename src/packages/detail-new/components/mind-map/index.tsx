@@ -226,6 +226,13 @@ const MindMapComponent = ({
       }
     });
 
+    // 注册节点点击事件
+    mindMapRef.current.on('node_click', (node: any) => {
+      const treeNode = transformMindMapToTree(node);
+      if (!treeNode) return;
+      setSelectedNode(treeNode);
+    });
+
     // 注册节点 hover 事件
     mindMapRef.current.on('node_mouseenter', (node: any, e: any) => {
       const nodeEl = e.target;

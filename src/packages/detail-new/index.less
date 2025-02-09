@@ -1,0 +1,81 @@
+@forwarditemcolor: #f50;
+
+.detail-wrap {
+  height: 100vh;
+  display: flex;
+  position: relative;
+}
+
+.operation-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 2;
+  padding: 16px;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.tree-wrap {
+  width: 70%;
+  border-right: 1px solid rgba(0, 0, 0, 0.15);
+  height: 100%;
+  overflow: scroll;
+  padding-top: 60px;
+}
+
+.edit-wrap {
+  width: 30%;
+  height: 100%;
+  overflow: scroll;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.form-wrap {
+  flex: 1;
+  overflow: scroll;
+  padding-bottom: 15px;
+}
+
+.tree-item {
+  display: flex;
+  align-items: center;
+}
+
+.btn-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.tree-edit-wrap {
+  margin-left: 15px;
+}
+
+.forward-item {
+  color: @forwarditemcolor;
+}
+
+.filed-item {
+  width: 100%;
+  height: auto;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  margin-bottom: 10px;
+  padding: 12px 0;
+}
+
+.desc-item {
+  text-align: left;
+  width: 50%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding-right: 10px;
+}

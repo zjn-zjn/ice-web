@@ -133,6 +133,13 @@ const ConfigList = () => {
           <Button
             type="link"
             size="small"
+            onClick={() => navigate(`/config/detail-new?app=${app}&iceId=${record.id}`)}
+          >
+            查看详情-新
+          </Button>
+          <Button
+            type="link"
+            size="small"
             onClick={() => {
               setEditObj({
                 visible: true,

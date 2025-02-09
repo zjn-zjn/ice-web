@@ -3,6 +3,7 @@ import apis from '../../../../../../apis'
 import { useRequest } from 'ahooks'
 import { TreeItem } from '../..'
 import { RelationNodeMap } from '../../constant'
+import { useState } from 'react'
 
 const relationTypeOptions = [
   { label: 'Relation', value: 1 },
@@ -37,6 +38,7 @@ const AddNodeModal = ({
   selectedNode
 }: Props) => {
   const [form] = Form.useForm()
+  const [loading, setLoading] = useState(false)
   const { data, run: getClass } = useRequest<
     {
       data: ClassItem[]
@@ -53,52 +55,41 @@ const AddNodeModal = ({
     }
   )
 
-  const { run: addNode, loading } = useRequest(
-    (params: object) => apis.editConf(params),
-    {
-      manual: true,
-      onSuccess: (res: any) => {
-        if (res?.ret === 0) {
-          message.success('success')
-          closeModal()
-          refresh()
-        } else {
-          message.error(res?.msg || 'failed')
-        }
-      },
-      onError: (err: any) => {
-        message.error(err.msg || 'server error')
-      }
-    }
-  )
-
   const onRelationTypeChange = (value: number) => {
-    if (value !== 1 && value !== 13) {
-      getClass(value)
+    if (value === 1) {
+      getClass(1)
     }
   }
 
-  const confirm = () => {
-    form
-      .validateFields()
-      .then((values) => {
-        const { relationType, nodeType, ...others } = values
-        const params = {
-          app,
-          iceId,
-          editType:
-            modalType === 'exchange' ? 5 : modalType === 'front' ? 4 : 1,
-          selectId: selectedNode?.showConf?.nodeId,
-          parentId: selectedNode?.parentId,
-          nextId: selectedNode?.nextId,
-          nodeType: relationType === 1 ? nodeType : relationType,
-          ...others,
-          confName: values.confName,
-          index: selectedNode?.index
-        }
-        addNode(params)
-      })
-      .catch(() => {})
+  const confirm = async () => {
+    try {
+      setLoading(true)
+      const values = await form.validateFields()
+      const params = {
+        app,
+        iceId,
+        editType: modalType === 'exchange' ? 5 : modalType === 'front' ? 4 : 1,
+        parentId: selectedNode?.parentId,
+        selectId: selectedNode?.showConf.nodeId,
+        index: selectedNode?.index,
+        nodeType: values.nodeType,
+        name: values.name,
+        clazz: values.clazz,
+        field: values.field,
+        relationType: values.relationType
+      }
+      await apis.editConf(params)
+      refresh()
+      message.success('success')
+      closeModal()
+    } catch (err: any) {
+      if (err.errorFields) {
+        return
+      }
+      message.error(err.msg || 'server error')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (

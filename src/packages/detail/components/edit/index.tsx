@@ -68,25 +68,49 @@ const FieldItem = ({ item }: { item: FieldItem }) => {
 const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
   const [isEdit, setIsEdit] = useState(false)
   const [form] = Form.useForm()
+  const [loading, setLoading] = useState(false)
 
-  const { run, loading } = useRequest(
-    (params: object) => apis.editConf(params),
-    {
-      manual: true,
-      onSuccess: (res: any) => {
-        if (res?.ret === 0) {
-          message.success('success')
-          setIsEdit(false)
-          refresh()
-        } else {
-          message.error(res?.msg || 'failed')
+  const confirmEdit = async () => {
+    try {
+      setLoading(true)
+      const values = await form.validateFields()
+      const { confField, fields, ...others } = values
+      const fieldsObj: { [key: string]: any } = {}
+      Object.entries<{
+        value: string | undefined
+        isNull: boolean | undefined
+      }>(fields || {}).forEach((item) => {
+        if (!!item[1].value || !!item[1].isNull) {
+          fieldsObj[item[0]] = item[1].isNull ? null : item[1].value
         }
-      },
-      onError: (err: any) => {
-        message.error(err.msg || 'server error')
+      })
+      const params = {
+        app,
+        iceId,
+        editType: 2,
+        selectId: selectedNode?.showConf?.nodeId,
+        parentId: selectedNode?.parentId,
+        nextId: selectedNode?.nextId,
+        ...selectedNode?.showConf,
+        ...others,
+        confName: undefined,
+        confField: !selectedNode?.showConf?.haveMeta
+          ? confField
+          : JSON.stringify(fieldsObj)
       }
+      await apis.editConf(params)
+      refresh()
+      message.success('success')
+      setIsEdit(false)
+    } catch (err: any) {
+      if (err.errorFields) {
+        return
+      }
+      message.error(err.msg || 'server error')
+    } finally {
+      setLoading(false)
     }
-  )
+  }
 
   useEffect(() => {
     setFormFields()
@@ -121,39 +145,6 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
       confField: selectedNode?.showConf?.confField,
       fields
     })
-  }
-
-  const confirmEdit = () => {
-    form
-      .validateFields()
-      .then((values) => {
-        const { confField, fields, ...others } = values
-        const fieldsObj: { [key: string]: any } = {}
-        Object.entries<{
-          value: string | undefined
-          isNull: boolean | undefined
-        }>(fields || {}).forEach((item) => {
-          if (!!item[1].value || !!item[1].isNull) {
-            fieldsObj[item[0]] = item[1].isNull ? null : item[1].value
-          }
-        })
-        const params = {
-          app,
-          iceId,
-          editType: 2,
-          selectId: selectedNode?.showConf?.nodeId,
-          parentId: selectedNode?.parentId,
-          nextId: selectedNode?.nextId,
-          ...selectedNode?.showConf,
-          ...others,
-          confName: undefined,
-          confField: !selectedNode?.showConf?.haveMeta
-            ? confField
-            : JSON.stringify(fieldsObj)
-        }
-        run(params)
-      })
-      .catch(() => {})
   }
 
   return (

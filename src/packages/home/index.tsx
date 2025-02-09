@@ -8,7 +8,7 @@ const Home = () => {
         icon={<SmileOutlined />}
         title='ICE配置后台'
         extra={
-          <Button href='http://waitmoon.com/zh' size='large' type='primary'>
+          <Button href='http://waitmoon.com' size='large' type='primary'>
             文档
           </Button>
         }

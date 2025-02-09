@@ -53,8 +53,8 @@ const TreeArea = ({
     Modal.confirm({
       title: `确认删除<${currentNode.showConf.labelName}>节点吗？`,
       onOk: async () => {
-        const res: any = await apis
-          .editConf({
+        try {
+          await apis.editConf({
             app,
             iceId,
             editType: 3,
@@ -63,14 +63,10 @@ const TreeArea = ({
             nextId: currentNode.nextId,
             index: currentNode.index
           })
-          .catch((err: any) => {
-            message.error(err.msg || 'server error')
-          })
-        if (res?.ret === 0) {
           refresh()
           message.success('success')
-        } else {
-          message.error(res?.msg || 'failed')
+        } catch (err: any) {
+          message.error(err.msg || 'server error')
         }
       }
     })
@@ -151,13 +147,9 @@ const TreeArea = ({
       }
       apis
         .editConf(params)
-        .then((res: any) => {
-          if (res?.ret === 0) {
-            refresh()
-            message.success('success')
-          } else {
-            message.error(res?.msg || 'failed')
-          }
+        .then(() => {
+          refresh()
+          message.success('success')
         })
         .catch((err: any) => {
           message.error(err.msg || 'server error')

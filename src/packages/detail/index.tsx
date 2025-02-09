@@ -6,11 +6,14 @@ import { useCallback, useMemo, useState } from 'react'
 import { Button, Select, Space, Modal, message } from 'antd'
 import ImportModal from '../config-list/components/import-modal'
 import ExportModal from '../config-list/components/export-modal'
-import { getSearch } from '../../utils'
+import { useLocation } from 'react-router-dom'
 import './index.less'
 
 const Detail = () => {
-  const { app, iceId } = getSearch()
+  const location = useLocation()
+  const searchParams = new URLSearchParams(location.search)
+  const iceId = searchParams.get('iceId') || ''
+  const app = searchParams.get('app') || ''
   const [selectedNode, setSelectedNode] = useState<TreeItem>()
   const [address, setAddress] = useState('server')
   const [importVisible, setImportVisible] = useState(false)
@@ -37,16 +40,19 @@ const Detail = () => {
             ...(item.forward ? [{ ...item.forward, isForward: true }] : []),
             ...children,
           ]),
-          title: '',
+          title: showConf?.labelName || ''
         }
       }),
     []
   )
 
   const treeList = useMemo(() => {
-    const root = data?.data?.root
-    return root ? getTreeList([{ ...root, isRoot: true }]) : []
-  }, [data?.data?.root])
+    const root = data?.root
+    console.log('root:', root)
+    const result = root ? getTreeList([{ ...root, isRoot: true }]) : []
+    console.log('treeList:', JSON.stringify(result, null, 2))
+    return result
+  }, [data?.root])
 
   const selectOptions = useMemo(() => {
     return [
@@ -70,19 +76,15 @@ const Detail = () => {
     Modal.confirm({
       title: '确认发布所有变更吗？',
       onOk: async () => {
-        const res: any = await apis
-          .release({
+        try {
+          await apis.release({
             app,
             iceId
           })
-          .catch((err: any) => {
-            message.error(err.msg || 'server error')
-          })
-        if (res?.ret === 0) {
           run()
           message.success('success')
-        } else {
-          message.error(res?.msg || 'failed')
+        } catch (err: any) {
+          message.error(err.msg || 'server error')
         }
       }
     })
@@ -92,19 +94,15 @@ const Detail = () => {
     Modal.confirm({
       title: '确认清除所有变更吗？',
       onOk: async () => {
-        const res: any = await apis
-          .updateClean({
+        try {
+          await apis.updateClean({
             app,
             iceId
           })
-          .catch((err: any) => {
-            message.error(err.msg || 'server error')
-          })
-        if (res?.ret === 0) {
           run()
           message.success('success')
-        } else {
-          message.error(res?.msg || 'failed')
+        } catch (err: any) {
+          message.error(err.msg || 'server error')
         }
       }
     })
@@ -149,17 +147,26 @@ const Detail = () => {
         />
       </div>
       <ImportModal
-        visible={importVisible}
-        closeModal={() => {
+        open={importVisible}
+        onCancel={() => {
           setImportVisible(false)
         }}
+        onOk={() => {
+          setImportVisible(false)
+          run()
+        }}
+        app={app}
       />
       <ExportModal
-        visible={exportVisible}
+        open={exportVisible}
         iceId={iceId}
-        closeModal={() => {
+        onCancel={() => {
           setExportVisible(false)
         }}
+        onOk={() => {
+          setExportVisible(false)
+        }}
+        app={app}
       />
     </>
   )

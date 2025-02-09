@@ -1,16 +1,46 @@
 import { Layout, Menu, Tabs } from 'antd'
-import logoImg from '../assets/logo.png'
-import { routers, menuList, allTabList } from '../config'
-import { Suspense, useEffect, useState } from 'react'
-import CacheRoute, {
-  CacheSwitch,
-  dropByCacheKey
-} from 'react-router-cache-route'
-import { useHistory } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
+import { useEffect, useState } from 'react'
 import { pathToRegexp } from 'path-to-regexp'
+import logoImg from '../assets/logo.png'
 import './index.less'
 
 const { Sider, Content } = Layout
+
+// 定义路由配置
+const menuList = [
+  {
+    key: '/',
+    label: '首页'
+  },
+  {
+    key: '/config',
+    label: '配置'
+  }
+]
+
+const allTabList = [
+  {
+    key: '/',
+    label: '首页',
+    closable: false
+  },
+  {
+    key: '/config',
+    label: '配置',
+    closable: true
+  },
+  {
+    key: '/config/list',
+    label: '列表',
+    closable: true
+  },
+  {
+    key: '/config/detail',
+    label: '详情',
+    closable: true
+  }
+]
 
 const regexp = (p: string) =>
   pathToRegexp(p, [], {
@@ -19,137 +49,126 @@ const regexp = (p: string) =>
     sensitive: false
   })
 
-const Common = () => {
-  const history = useHistory()
-  const [activeTab, setActiveTab] = useState(() => ({
-    ...(allTabList.find((item) =>
-      regexp(item.key).test(history.location.pathname)
+interface CommonProps {
+  children?: React.ReactNode
+}
+
+const Common = ({ children }: CommonProps) => {
+  const navigate = useNavigate()
+  const location = useLocation()
+  const [activeTab, setActiveTab] = useState(() => {
+    const matchedTab = allTabList.find((item) =>
+      regexp(item.key).test(location.pathname)
     ) || {
       label: '',
       key: ''
-    }),
-    path: history.location.pathname,
-    search: window.location.search
-  }))
+    }
+    return {
+      ...matchedTab,
+      path: location.pathname,
+      search: location.search
+    }
+  })
 
   const [tabList, setTabList] = useState(() =>
     allTabList
-      .filter((item) => regexp(item.key).test(history.location.pathname))
+      .filter((item) => regexp(item.key).test(location.pathname))
       .map((item) => ({
         ...item,
-        path: history.location.pathname,
-        search: window.location.search
+        path: location.pathname,
+        search: location.search
       }))
   )
 
   useEffect(() => {
-    const unListen = history.listen((location) => {
-      const currentPath = location.pathname
-      const currentSearch = window.location.search
-      const inListIndex = tabList.findIndex((item) =>
+    const currentPath = location.pathname
+    const currentSearch = location.search
+    const inListIndex = tabList.findIndex((item) =>
+      regexp(item.key).test(currentPath)
+    )
+
+    if (inListIndex === -1) {
+      const currentTab = allTabList.find((item) =>
         regexp(item.key).test(currentPath)
       )
-      const foundTabItem = allTabList.find((item) =>
-        regexp(item.key).test(currentPath)
-      )
-      if (foundTabItem) {
-        const newTabItem = {
-          ...foundTabItem,
+      if (currentTab) {
+        const newTab = {
+          ...currentTab,
           path: currentPath,
           search: currentSearch
         }
-        setActiveTab(newTabItem)
-        if (inListIndex === -1) {
-          setTabList((pre) => [...pre, newTabItem])
-        } else if (tabList[inListIndex].search !== currentSearch) {
-          setTabList((pre) =>
-            pre.map((item, i) => (i !== inListIndex ? item : newTabItem))
-          )
-        }
+        setTabList([...tabList, newTab])
+        setActiveTab(newTab)
       }
-    })
-    return unListen
-  }, [tabList])
+    } else {
+      const currentTab = {
+        ...tabList[inListIndex],
+        path: currentPath,
+        search: currentSearch
+      }
+      setActiveTab(currentTab)
+      const newTabList = [...tabList]
+      newTabList[inListIndex] = currentTab
+      setTabList(newTabList)
+    }
+  }, [location])
 
-  const onMenuClick = ({ key }: { key: string }) => {
-    history.push(key)
+  const handleMenuClick = ({ key }: { key: string }) => {
+    navigate(key)
   }
 
-  const onTabChange = (key: string) => {
-    const tabItem = tabList.find((item) => item.key === key)
-    if (tabItem) {
-      history.push(`${tabItem.path}${tabItem.search}`)
+  const handleTabChange = (key: string) => {
+    const targetTab = tabList.find((item) => item.key === key)
+    if (targetTab) {
+      navigate(targetTab.path + targetTab.search)
     }
   }
 
-  const onTabEdit = (
-    key: React.MouseEvent | React.KeyboardEvent | string,
-    action: 'add' | 'remove'
-  ) => {
+  const handleTabEdit = (targetKey: any, action: 'add' | 'remove') => {
     if (action === 'remove') {
-      if (tabList.length <= 1) {
-        return
-      }
-      const newTabList = [...tabList]
-      for (let i = 0; i < newTabList.length; i++) {
-        if (newTabList[i].key === key) {
-          dropByCacheKey(newTabList[i].key)
-          newTabList.splice(i, 1)
-          setTabList(newTabList)
-          if (activeTab.key === key) {
-            const { path, search } = newTabList[i + 1] || newTabList[i - 1]
-            history.push(`${path}${search}`)
+      const targetIndex = tabList.findIndex((item) => item.key === targetKey)
+      if (targetIndex > -1) {
+        const newTabList = tabList.filter((item) => item.key !== targetKey)
+        setTabList(newTabList)
+        if (activeTab.key === targetKey) {
+          const nextTab = newTabList[targetIndex - 1] || newTabList[0]
+          if (nextTab) {
+            navigate(nextTab.path + nextTab.search)
           }
-          break
         }
       }
     }
   }
 
   return (
-    <Layout className='admin-common'>
-      <Sider className='sider'>
-        <div className='logo'>
-          <img alt='' src={logoImg} />
+    <Layout className="common-container">
+      <Sider className="common-sider">
+        <div className="logo">
+          <img src={logoImg} alt="logo" />
           <span>ICE配置后台</span>
         </div>
         <Menu
-          mode='inline'
-          items={menuList}
-          theme='dark'
-          onClick={onMenuClick}
+          theme="dark"
+          mode="inline"
           selectedKeys={[activeTab.key]}
+          onClick={handleMenuClick}
+          items={menuList}
         />
       </Sider>
-      <Layout className='content-layout'>
-        <div className='header'>
-          <Tabs
-            hideAdd
-            type='editable-card'
-            activeKey={activeTab.key}
-            onChange={onTabChange}
-            onEdit={onTabEdit}
-          >
-            {tabList.map((tab) => (
-              <Tabs.TabPane tab={tab.label} key={tab.key} />
-            ))}
-          </Tabs>
-        </div>
-        <Content className='content'>
-          <Suspense fallback={null}>
-            <CacheSwitch>
-              {routers.map((item) => (
-                <CacheRoute
-                  className='wrap'
-                  key={item.path}
-                  path={item.path}
-                  cacheKey={item.path}
-                  component={item.component}
-                  exact
-                />
-              ))}
-            </CacheSwitch>
-          </Suspense>
+      <Layout>
+        <Tabs
+          className="common-tabs"
+          activeKey={activeTab.key}
+          onChange={handleTabChange}
+          onEdit={handleTabEdit}
+          type="editable-card"
+          hideAdd
+          items={tabList}
+        />
+        <Content className="common-content">
+          <div className="common-page">
+            {children}
+          </div>
         </Content>
       </Layout>
     </Layout>

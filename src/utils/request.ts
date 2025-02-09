@@ -1,66 +1,81 @@
-import axios, { AxiosRequestConfig } from 'axios'
+import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
 import qs from 'qs'
+import { message } from 'antd'
 
-interface RequestArgs {
-  headers?: object
-  [propName: string]: any
+// 从环境变量获取 baseURL
+const baseURL = import.meta.env.VITE_API_BASE_URL || ''
+
+interface ApiResponse<T = any> {
+  ret: number
+  data: T
+  msg?: string
 }
 
-type RequestType = (url: string, args?: RequestArgs) => any
-
-interface Request {
-  GET: RequestType
-  POST: RequestType
+interface RequestConfig extends AxiosRequestConfig {
+  hideErrorMessage?: boolean
 }
 
-type Method = 'post' | 'get'
-
-let baseArgs: AxiosRequestConfig = {
-  baseURL: ''
-}
-
-axios.interceptors.response.use((response: any) => {
-  return response.data
+const instance = axios.create({
+  baseURL,
+  timeout: 10000,
+  withCredentials: true,
 })
 
-const baseRequest = (
-  url: string,
-  method: Method,
-  data: any,
-  args?: RequestArgs
-) => {
-  const isNeedBody = method === 'post'
-  const headers: any = (args && args.headers) || {
-    'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+// 请求拦截器
+instance.interceptors.request.use(
+  (config) => {
+    // 可以在这里添加token等认证信息
+    return config
+  },
+  (error: AxiosError) => {
+    return Promise.reject(error)
   }
-  //支持多种content-type 数据传输
-  const isJsonContentType = !/application\/x-www-form-urlencoded/.test(
-    headers['Content-Type']
-  )
-  const jsonContentTypeData = isJsonContentType
-    ? { data }
-    : { data: qs.stringify(data, { arrayFormat: 'repeat' }) }
-  const requestParams = isNeedBody ? jsonContentTypeData : { params: data }
-  return axios({
-    method,
-    url,
-    withCredentials: true,
-    headers,
-    paramsSerializer: (params: any) =>
-      qs.stringify(params, { arrayFormat: 'repeat' }),
-    ...requestParams,
-    ...baseArgs,
-    ...args
-  })
+)
+
+// 响应拦截器
+instance.interceptors.response.use(
+  (response: AxiosResponse) => {
+    const { data } = response
+    if (data.ret === 0) {
+      return data.data
+    }
+    if (!response.config.hideErrorMessage) {
+      message.error(data.msg || '请求失败')
+    }
+    return Promise.reject(data)
+  },
+  (error: AxiosError) => {
+    if (!error.config?.hideErrorMessage) {
+      message.error(error.message || '网络错误')
+    }
+    return Promise.reject(error)
+  }
+)
+
+export const request = {
+  get: <T = any>(url: string, params?: any, config?: RequestConfig) =>
+    instance.get<any, T>(url, {
+      params,
+      paramsSerializer: (params) =>
+        qs.stringify(params, { arrayFormat: 'repeat' }),
+      ...config,
+    }),
+
+  post: <T = any>(url: string, data?: any, config?: RequestConfig) =>
+    instance.post<any, T>(url, data, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      ...config,
+    }),
+
+  form: <T = any>(url: string, data?: any, config?: RequestConfig) =>
+    instance.post<any, T>(url, qs.stringify(data, { arrayFormat: 'repeat' }), {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      ...config,
+    }),
 }
 
-const GET = (url: string, args?: RequestArgs) => (data?: any) =>
-  baseRequest(url, 'get', data, args)
-
-const POST = (url: string, args?: RequestArgs) => (data?: any) =>
-  baseRequest(url, 'post', data, args)
-
-export default {
-  GET,
-  POST
-} as Request
+export default request

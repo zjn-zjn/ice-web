@@ -1,6 +1,6 @@
-import { useHistory } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'
 import { useState } from 'react'
-import { Button, Table, Form, Input, Space } from 'antd'
+import { Button, Table, Form, Input, Space, message } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
 import apis from '../../apis'
 import { useRequest } from 'ahooks'
@@ -10,7 +10,7 @@ import DeleteModal from './components/delete-modal'
 import BackupModal from './components/backup-modal'
 import BackupHistory from './components/backup-history'
 import ImportModal from './components/import-modal'
-import { getSearch } from '../../utils'
+
 interface ModalState {
   visible: boolean
   iceId: string | number
@@ -24,9 +24,20 @@ interface HistoryModalState extends ModalState {
   name: string
 }
 
+interface ConfigItem {
+  id: number
+  name: string
+  scenes: string
+  confId: string
+  debug: string
+  [key: string]: any
+}
+
 const ConfigList = () => {
-  const history = useHistory()
-  const id = getSearch().id as string
+  const navigate = useNavigate()
+  const location = useLocation()
+  const searchParams = new URLSearchParams(location.search)
+  const app = searchParams.get('app') || ''
   const [form] = Form.useForm()
   const [pageId, setPageId] = useState(1)
   const [pageSize, setPageSize] = useState(20)
@@ -57,222 +68,244 @@ const ConfigList = () => {
   })
 
   const {
-    data,
+    data: response,
     run: getConfigList,
     loading
-  } = useRequest<any, any[]>(
-    () =>
-      apis.confList({
-        app: id,
+  } = useRequest(
+    () => {
+      const params = {
+        app: Number(app),
         pageId,
         pageSize,
         ...form.getFieldsValue()
-      }),
+      }
+      return apis.confList(params)
+    },
     {
-      refreshDeps: [id, pageId, pageSize]
+      refreshDeps: [app, pageId, pageSize],
+      onError: (error) => {
+        message.error('获取配置列表失败：' + error.message)
+      }
     }
   )
 
-  const { list = [], total } = data?.data || {}
+  const { list = [], total = 0 } = response || {}
 
   const columns = [
     {
       title: 'ID',
-      dataIndex: 'id'
+      dataIndex: 'id',
+      width: 80
     },
     {
       title: '名称',
-      dataIndex: 'name'
+      dataIndex: 'name',
+      width: 200
     },
     {
       title: '场景',
-      dataIndex: 'scenes'
+      dataIndex: 'scenes',
+      width: 150
     },
     {
       title: '配置ID',
-      dataIndex: 'confId'
+      dataIndex: 'confId',
+      width: 100
     },
     {
       title: 'Debug',
-      dataIndex: 'debug'
+      dataIndex: 'debug',
+      width: 80
     },
     {
       title: '操作',
-      dataIndex: 'operation',
-      render: (text: any, record: ConfigItem) => (
-        <>
-          <Button type='link' onClick={() => openEditModal(record)}>
-            编辑
-          </Button>
+      key: 'operation',
+      width: 280,
+      render: (_, record: ConfigItem) => (
+        <Space>
           <Button
-            type='link'
-            onClick={() => linkToDetail(record.app, record.id)}
+            type="link"
+            size="small"
+            onClick={() => navigate(`/config/detail?app=${app}&iceId=${record.id}`)}
           >
             查看详情
           </Button>
-          <Button type='link' onClick={() => openPushModal(record.id)}>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => {
+              setEditObj({
+                visible: true,
+                currentItem: record
+              })
+            }}
+          >
+            编辑
+          </Button>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => {
+              setExportObj({
+                visible: true,
+                iceId: record.id
+              })
+            }}
+          >
+            导出
+          </Button>
+          <Button
+            type="link"
+            size="small"
+            onClick={() => {
+              setBackupObj({
+                visible: true,
+                iceId: record.id
+              })
+            }}
+          >
             备份
           </Button>
           <Button
-            type='link'
-            onClick={() => openPushHistory(record.id, record.name)}
+            type="link"
+            size="small"
+            onClick={() => {
+              setShowHistory({
+                visible: true,
+                iceId: record.id,
+                name: record.name
+              })
+            }}
           >
-            备份历史
+            历史
           </Button>
-          <Button type='link' onClick={() => openExportModal(record.id)}>
-            导出
-          </Button>
-          <Button type='link' onClick={() => openDeleteModal(record.id)}>
+          <Button
+            type="link"
+            size="small"
+            danger
+            onClick={() => {
+              setDeleteObj({
+                visible: true,
+                iceId: record.id
+              })
+            }}
+          >
             删除
           </Button>
-        </>
+        </Space>
       )
     }
   ]
 
-  const openEditModal = (item?: ConfigItem) => {
-    setEditObj({
-      visible: true,
-      currentItem: item
-    })
-  }
-
-  const linkToDetail = (app: number, id: number) => {
-    history.push(`/config/detail?app=${app}&iceId=${id}`)
-  }
-
-  const openPushModal = (id: number) => {
-    setBackupObj({
-      visible: true,
-      iceId: id
-    })
-  }
-
-  const openDeleteModal = (id: number) => {
-    setDeleteObj({
-      visible: true,
-      iceId: id
-    })
-  }
-
-  const openPushHistory = (id: number, name: string) => {
-    setShowHistory({
-      visible: true,
-      iceId: id,
-      name
-    })
-  }
-
-  const openExportModal = (id: number, pushId?: number) => {
-    setExportObj({ visible: true, iceId: id, pushId })
-  }
-
-  const openImportModal = () => {
-    setImportVisible(true)
-  }
-
   return (
-    <Space direction='vertical' style={{ width: '100%' }}>
-      <Space>
-        <Button onClick={() => openEditModal()}>新增</Button>
-        <Button onClick={openImportModal}>导入</Button>
-      </Space>
-      <Form form={form} layout='inline'>
-        <Form.Item name='name' label='名称'>
-          <Input />
-        </Form.Item>
-        <Form.Item name='scene' label='场景'>
-          <Input />
-        </Form.Item>
-        <Form.Item name='id' label='ID'>
-          <Input />
-        </Form.Item>
+    <div className="config-list">
+      <div className="header">
         <Space>
-          <Button
-            type='primary'
-            icon={<SearchOutlined />}
-            onClick={() => {
-              getConfigList()
-            }}
-          >
-            查询
+          <Button type="primary" onClick={() => setEditObj({ visible: true })}>
+            新建
           </Button>
-          <Button
-            onClick={() => {
-              form.resetFields()
-            }}
-          >
-            重置
-          </Button>
+          <Button onClick={() => setImportVisible(true)}>导入</Button>
         </Space>
-      </Form>
-      <Table<ConfigItem>
-        rowKey='id'
+        <Form
+          form={form}
+          layout="inline"
+          onFinish={() => {
+            setPageId(1)
+            getConfigList()
+          }}
+        >
+          <Form.Item name="id">
+            <Input placeholder="请输入ID" allowClear />
+          </Form.Item>
+          <Form.Item name="name">
+            <Input placeholder="请输入名称" allowClear />
+          </Form.Item>
+          <Form.Item name="scenes">
+            <Input placeholder="请输入场景" allowClear />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
+              搜索
+            </Button>
+          </Form.Item>
+        </Form>
+      </div>
+      <Table
         columns={columns}
-        loading={loading}
         dataSource={list}
+        rowKey="id"
+        loading={loading}
         pagination={{
-          position: ['bottomRight'],
-          total,
+          current: pageId,
           pageSize,
-          onChange: (page, pageSize) => {
+          total,
+          showSizeChanger: true,
+          showQuickJumper: true,
+          showTotal: (total) => `共 ${total} 条`,
+          onChange: (page, size) => {
             setPageId(page)
-            setPageSize(pageSize)
+            setPageSize(size)
           }
         }}
       />
-      <ExportModal
-        visible={exportObj.visible}
-        iceId={exportObj.iceId}
-        pushId={exportObj.pushId}
-        closeModal={() => {
-          setExportObj((pre) => ({ ...pre, visible: false }))
-        }}
-      />
       <EditAddModal
-        app={id}
-        visible={editObj.visible}
-        currentItem={editObj.currentItem}
-        getConfigList={getConfigList}
-        closeModal={() => {
-          setEditObj((pre) => ({ ...pre, visible: false }))
+        open={editObj.visible}
+        data={editObj.currentItem}
+        onCancel={() => setEditObj({ visible: false })}
+        onOk={() => {
+          setEditObj({ visible: false })
+          getConfigList()
         }}
+        app={app}
       />
-      <BackupModal
-        app={id}
-        iceId={backupObj.iceId}
-        visible={backupObj.visible}
-        closeModal={() => {
-          setBackupObj((pre) => ({ ...pre, visible: false }))
-        }}
-      />
-      <BackupHistory
-        app={id}
-        visible={showHistory.visible}
-        iceId={showHistory.iceId}
-        name={showHistory.name}
-        openExportModal={openExportModal}
-        getConfigList={getConfigList}
-        closeModal={() => {
-          setShowHistory((pre) => ({ ...pre, visible: false }))
-        }}
-      />
-      <ImportModal
-        visible={importVisible}
-        closeModal={() => {
-          setImportVisible(false)
-        }}
+      <ExportModal
+        open={exportObj.visible}
+        iceId={exportObj.iceId}
+        onCancel={() => setExportObj({ visible: false, iceId: '' })}
+        onOk={() => setExportObj({ visible: false, iceId: '' })}
+        app={app}
       />
       <DeleteModal
-        app={id}
+        open={deleteObj.visible}
         iceId={deleteObj.iceId}
-        visible={deleteObj.visible}
-        getConfigList={getConfigList}
-        closeModal={() => {
-          setDeleteObj((pre) => ({ ...pre, visible: false }))
+        onCancel={() => setDeleteObj({ visible: false, iceId: '' })}
+        onOk={() => {
+          setDeleteObj({ visible: false, iceId: '' })
+          getConfigList()
         }}
+        app={app}
       />
-    </Space>
+      <BackupModal
+        open={backupObj.visible}
+        iceId={backupObj.iceId}
+        onCancel={() => setBackupObj({ visible: false, iceId: '' })}
+        onOk={() => setBackupObj({ visible: false, iceId: '' })}
+        app={app}
+      />
+      <BackupHistory
+        open={showHistory.visible}
+        iceId={showHistory.iceId}
+        name={showHistory.name}
+        onCancel={() =>
+          setShowHistory({ visible: false, iceId: '', name: '' })
+        }
+        openExportModal={(id: number, pushId?: number) => {
+          setExportObj({ visible: true, iceId: id, pushId })
+          setShowHistory({ visible: false, iceId: '', name: '' })
+        }}
+        getConfigList={getConfigList}
+        app={app}
+      />
+      <ImportModal
+        open={importVisible}
+        onCancel={() => setImportVisible(false)}
+        onOk={() => {
+          setImportVisible(false)
+          getConfigList()
+        }}
+        app={app}
+      />
+    </div>
   )
 }
 

@@ -294,12 +294,17 @@ const MindMapComponent = ({
     mindMapRef.current.on('node_mouseenter', (node: any, e: any) => {
       const nodeEl = e.target;
 
-      // 如果已经有按钮组，就不重复创建
-      if (nodeEl.querySelector('.node-buttons')) {
-        const buttons = nodeEl.querySelector('.node-buttons');
-        buttons.style.display = 'block';
-        return;
-      }
+      // 清理所有节点的按钮和hover区域
+      const allButtons = document.querySelectorAll('.node-buttons');
+      const allHoverAreas = document.querySelectorAll('.hover-area');
+      allButtons.forEach(btn => btn.remove());
+      allHoverAreas.forEach(area => area.remove());
+
+      // 即使已经有按钮组也重新创建，确保状态一致
+      const existingButtons = nodeEl.querySelector('.node-buttons');
+      const existingHoverArea = nodeEl.querySelector('.hover-area');
+      if (existingButtons) existingButtons.remove();
+      if (existingHoverArea) existingHoverArea.remove();
 
       const data = node.nodeData.data;
       const showConf = data?.showConf;
@@ -352,7 +357,7 @@ const MindMapComponent = ({
       const hoverArea = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       hoverArea.setAttribute('class', 'hover-area');
       hoverArea.setAttribute('x', '0');
-      hoverArea.setAttribute('y', `${-node.height/2 - 30}`);
+      hoverArea.setAttribute('y', '0');
       hoverArea.setAttribute('width', `${node.width}`);
       hoverArea.setAttribute('height', `${node.height + 40}`);
       hoverArea.setAttribute('fill', 'transparent');
@@ -363,7 +368,7 @@ const MindMapComponent = ({
       buttonsGroup.setAttribute('class', 'node-buttons');
       const buttonWidth = buttons.length * 24;
       const xOffset = (node.width - buttonWidth) / 2 + 5;
-      buttonsGroup.setAttribute('transform', `translate(${xOffset}, ${-node.height/2 - 5})`);
+      buttonsGroup.setAttribute('transform', `translate(${xOffset}, ${-node.height/2})`);
 
       // 添加按钮
       buttons.forEach((btn, index) => {
@@ -417,12 +422,9 @@ const MindMapComponent = ({
       });
     });
 
-    mindMapRef.current.on('node_mouseleave', (node: any, e: any) => {
-      // 移除旧的事件处理，让hover区域处理显示/隐藏
-    });
-
     // 注册拖拽完成事件
     mindMapRef.current.on('afterExecCommand', (name: string, ...args: any[]) => {
+      console.log("afterExecCommand", name, args);
       if (name === 'MOVE_NODE_TO' || name === 'INSERT_AFTER' || name === 'INSERT_BEFORE') {
         const [dragNodes, targetNode] = args;
         if (!dragNodes || !dragNodes.length || !targetNode) return;
@@ -464,49 +466,6 @@ const MindMapComponent = ({
             refresh();
           });
       }
-    });
-
-    // 注册节点拖动结束事件
-    mindMapRef.current.on('node_dragend', (node: any, parent: any) => {
-      console.log("node", node);
-      console.log("parent", parent);
-      // 非server 不可移动
-      if (!!address && address !== 'server') {
-        return;
-      }
-      // 前置节点不可移动
-      if (node.data.data.isForward) {
-        return;
-      }
-      // 不可移动到根节点、前置节点的位置
-      const targetNode = transformMindMapToTree(parent);
-      if (!targetNode || targetNode.isRoot || targetNode.isForward) {
-        return;
-      }
-
-      const sourceNode = transformMindMapToTree(node);
-      if (!sourceNode) return;
-
-      const params = {
-        app,
-        iceId,
-        editType: 6,
-        parentId: sourceNode.parentId,
-        selectId: sourceNode.showConf.nodeId,
-        nextId: sourceNode.nextId,
-        index: sourceNode.index,
-        moveTo: targetNode.dragOver && !!RelationNodeMap.get(targetNode.showConf.nodeType) ? 0 : (sourceNode.parentId === targetNode.parentId && targetNode.index > sourceNode.index ? targetNode.index : targetNode.index + 1),
-        moveToParentId: targetNode.dragOver && !!RelationNodeMap.get(targetNode.showConf.nodeType) ? targetNode.showConf.nodeId : (sourceNode.parentId !== targetNode.parentId ? targetNode.parentId : undefined)
-      };
-
-      apis.editConf(params)
-        .then(() => {
-          refresh();
-          message.success('success');
-        })
-        .catch((err: any) => {
-          message.error(err.msg || 'server error');
-        });
     });
 
     // 注册节点按钮点击事件

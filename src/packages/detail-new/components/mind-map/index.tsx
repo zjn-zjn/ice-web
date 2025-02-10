@@ -243,10 +243,16 @@ const MindMapComponent = ({
     });
 
     // 监听渲染完成事件
-    mindMapRef.current.on('node_tree_render_end', () => {
+    mindMapRef.current.on('node_tree_render_end', async () => {
       console.log('11. === node_tree_render_end ===');
       if (mindMapRef.current) {
         console.log('12. Mind map instance:', mindMapRef.current);
+        
+        // 等待一帧确保渲染完成
+        await new Promise(resolve => requestAnimationFrame(resolve));
+        
+        // 移动到最左边
+        mindMapRef.current.view.translateXTo(-450);
         
         const renderer = mindMapRef.current.renderer;
         if (renderer) {

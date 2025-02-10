@@ -183,7 +183,7 @@ const MindMapComponent = ({
         shape: 'rectangle',
         marginX: 50,
         marginY: 0,
-        fillColor: '#f6f6f6',
+        fillColor: '#b8fcb8',
         fontFamily: '微软雅黑, Microsoft YaHei',
         color: '#333',
         fontSize: 16,
@@ -316,11 +316,11 @@ const MindMapComponent = ({
       }
 
       // 添加前置节点按钮
-      if (!data.forward && !data.isroot) {
+      if (!data.forward) {
         buttons.push({
           type: 'add-forward',
           title: '添加前置节点',
-          path: 'M854.6 288.6L639.4 73.4c-6-6-14.1-9.4-22.6-9.4H192c-17.7 0-32 14.3-32 32v736c0 17.7 14.3 32 32 32h640c17.7 0 32-14.3 32-32V311.3c0-8.5-3.4-16.7-9.4-22.7zM790.2 326H602V137h302v216a42 42 0 0042 42h216v494z',
+          path: 'M482 152h60q8 0 8 8v704q0 8-8 8h-60q-8 0-8-8V160q0-8 8-8z M176 474h672q8 0 8 8v60q0 8-8 8H176q-8 0-8-8v-60q0-8 8-8z',
           fill: '#ff4d4f'
         });
       }
@@ -362,8 +362,8 @@ const MindMapComponent = ({
       const buttonsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       buttonsGroup.setAttribute('class', 'node-buttons');
       const buttonWidth = buttons.length * 24;
-      const xOffset = (node.width - buttonWidth) / 2;
-      buttonsGroup.setAttribute('transform', `translate(${xOffset}, ${-node.height/2 - 25})`);
+      const xOffset = (node.width - buttonWidth) / 2 + 5;
+      buttonsGroup.setAttribute('transform', `translate(${xOffset}, ${-node.height/2 - 5})`);
 
       // 添加按钮
       buttons.forEach((btn, index) => {
@@ -468,6 +468,8 @@ const MindMapComponent = ({
 
     // 注册节点拖动结束事件
     mindMapRef.current.on('node_dragend', (node: any, parent: any) => {
+      console.log("node", node);
+      console.log("parent", parent);
       // 非server 不可移动
       if (!!address && address !== 'server') {
         return;

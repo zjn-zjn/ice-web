@@ -25,7 +25,7 @@ interface Props {
 }
 
 // 转换树数据为思维导图数据
-const transformTreeToMindMap = (treeItems: TreeItem[]) => {
+const transformTreeToMindMap = (treeItems: TreeItem[]): any => {
   if (!treeItems?.length) {
     return {
       data: {
@@ -39,11 +39,11 @@ const transformTreeToMindMap = (treeItems: TreeItem[]) => {
     };
   }
 
-  const transformNode = (item: TreeItem, level: number = 0) => {
+  const transformNode = (item: TreeItem, level: number = 0): any => {
     if (!item) return null;
 
-    console.log('Transform node:', item);
-    console.log('Is forward?', item.isForward);
+    // console.log('Transform node:', item);
+    // console.log('Is forward?', item.isForward);
 
     // Create node
     const node = {
@@ -65,12 +65,13 @@ const transformTreeToMindMap = (treeItems: TreeItem[]) => {
         forwardId: item.forwardId,
         isForward: item.isForward,
         forward: item.forward,
-        color: item.isForward ? '#f50' : undefined // 直接在数据中设置颜色
+        color: item.isForward ? '#f50' : undefined,
+        borderColor: item.isForward ? '#f50' : undefined
       },
       children: []
     };
 
-    console.log('Created node:', node);
+    // console.log('Created node:', node);
 
     // Process children
     if (Array.isArray(item.children)) {
@@ -87,7 +88,7 @@ const transformTreeToMindMap = (treeItems: TreeItem[]) => {
   };
 
   const rootNode = transformNode(treeItems[0]);
-  console.log('Final root node:', rootNode);
+  // console.log('Final root node:', rootNode);
   return rootNode;
 };
 
@@ -177,53 +178,113 @@ const MindMapComponent = ({
     const mindMapData = transformTreeToMindMap(treeList);
     console.log('Mind Map Data:', mindMapData);
 
+    const customTheme = {
+      backgroundColor: '#fafafa',
+      lineWidth: 1,
+      lineColor: '#959da5',
+      generalizationLineWidth: 1,
+      generalizationLineColor: '#959da5',
+      
+      root: {
+        shape: 'rectangle',
+        marginX: 50,
+        marginY: 0,
+        fillColor: '#f6f6f6',
+        fontFamily: '微软雅黑, Microsoft YaHei',
+        color: '#333',
+        fontSize: 16,
+        fontWeight: 600,
+        borderWidth: 1,
+        borderColor: '#c7ccd1',
+        borderStyle: 'solid',
+        borderRadius: 4,
+        padding: [15, 15, 15, 15]
+      },
+      
+      second: {
+        shape: 'rectangle',
+        marginX: 100,
+        marginY: 40,
+        fillColor: '#fff',
+        fontFamily: '微软雅黑, Microsoft YaHei',
+        color: '#333',
+        fontSize: 14,
+        fontWeight: 400,
+        borderWidth: 1,
+        borderColor: '#c7ccd1',
+        borderStyle: 'solid',
+        borderRadius: 4,
+        padding: [10, 10, 10, 10]
+      },
+      
+      node: {
+        shape: 'rectangle',
+        marginX: 50,
+        marginY: 0,
+        fillColor: '#fff',
+        fontFamily: '微软雅黑, Microsoft YaHei',
+        color: '#333',
+        fontSize: 14,
+        fontWeight: 400,
+        borderWidth: 1,
+        borderColor: '#c7ccd1',
+        borderStyle: 'solid',
+        borderRadius: 4,
+        padding: [10, 10, 10, 10]
+      }
+    };
+
     mindMapRef.current = new MindMap({
       el: containerRef.current.querySelector('.mind-map-container'),
       data: mindMapData,
       layout: 'logicalStructure',
       direction: 2,
-      style: {
-        lineWidth: 1,
-        lineColor: '#959da5',
-        rootLineColor: '#959da5',
-        lineStyle: 'straight',
-        generalizationLineWidth: 1,
-        generalizationLineColor: '#959da5',
-        associativeLineWidth: 1,
-        associativeLineColor: '#959da5',
-        nodeUseEllipse: false,
-        nodeTextColor: (node: any) => {
-          return node.data.isForward ? '#f50' : '#333';
-        },
-        nodeTextFontSize: 14,
-        nodeTextFontWeight: 400,
-        nodeTextFontFamily: 'PingFang SC',
-        nodeRectPadding: 10,
-        nodeRectHorizontalPadding: 10,
-        nodeRectBorderRadius: 4,
-        nodeRectFillColor: '#fff',
-        nodeRectBorderColor: '#c7ccd1',
-        nodeRectBorderWidth: 1,
-        nodeRectBorderStyle: 'solid',
-        nodeRectBorderDasharray: 'none',
-        nodeRectBorderDashoffset: 0,
-        nodeRectBorderOpacity: 1,
-        nodeRectBorderShadowColor: 'transparent',
-        nodeRectBorderShadowBlur: 0,
-        nodeRectBorderShadowOffsetX: 0,
-        nodeRectBorderShadowOffsetY: 0,
-        nodeRectBorderShadowSpread: 0,
-        nodeRectBorderShadowInset: false,
-      },
-      customCreateNodeCallback: (node: any) => {
-        console.log('Create node callback:', node);
-        if (node.nodeData.data.isForward) {
-          const rect = node.nodeData.el.querySelector('.smm-node-rect');
-          if (rect) {
-            rect.style.stroke = '#f50';
-          }
+      themeConfig: customTheme
+    });
+
+    // 监听渲染完成事件
+    mindMapRef.current.on('node_tree_render_end', () => {
+      console.log('11. === node_tree_render_end ===');
+      if (mindMapRef.current) {
+        console.log('12. Mind map instance:', mindMapRef.current);
+        
+        const renderer = mindMapRef.current.renderer;
+        if (renderer) {
+          console.log('13. Renderer:', renderer);
+          console.log('14. Render tree:', renderer.renderTree);
+          
+          // 递归更新节点样式
+          const updateNodeStyle = (node: any) => {
+            if (!node || !node._node) return;
+            
+            console.log('15. Updating node style:', {
+              data: node.data,
+              isForward: node.data.isForward,
+              node: node._node
+            });
+
+            // 如果是转发节点，更新样式
+            if (node.data.isForward) {
+              const textElement = node._node.querySelector('text');
+              const rectElement = node._node.querySelector('rect');
+              
+              if (textElement) {
+                textElement.style.fill = '#f50';
+              }
+              
+              if (rectElement) {
+                rectElement.style.stroke = '#f50';
+              }
+            }
+
+            // 递归处理子节点
+            node.children?.forEach((child: any) => updateNodeStyle(child));
+          };
+
+          updateNodeStyle(renderer.renderTree);
         }
       }
+      console.log('16. ========================');
     });
 
     // 注册节点点击事件

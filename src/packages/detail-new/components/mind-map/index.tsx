@@ -5,6 +5,7 @@ import './index.less';
 import { Modal, message, Tooltip } from 'antd';
 import AddExchangeNodeModal from './AddExchangeNodeModal';
 import apis from '../../../../apis';
+import Drag from 'simple-mind-map/src/plugins/Drag.js';
 import {
   PlusCircleTwoTone,
   ControlTwoTone,
@@ -227,11 +228,18 @@ const MindMapComponent = ({
       }
     };
 
+    MindMap.usePlugin(Drag);
+
     mindMapRef.current = new MindMap({
       el: containerRef.current.querySelector('.mind-map-container'),
       data: mindMapData,
       layout: 'logicalStructure',
       direction: 2,
+      draggable: true,
+      mousewheelZoom: true,
+      mouseSelectionShow: true,
+      allowDragNode: true,
+      allowDragExtension: true,
       themeConfig: customTheme
     });
 
@@ -413,6 +421,92 @@ const MindMapComponent = ({
       // 移除旧的事件处理，让hover区域处理显示/隐藏
     });
 
+    // 注册拖拽完成事件
+    mindMapRef.current.on('afterExecCommand', (name: string, ...args: any[]) => {
+      if (name === 'MOVE_NODE_TO' || name === 'INSERT_AFTER' || name === 'INSERT_BEFORE') {
+        const [dragNodes, targetNode] = args;
+        if (!dragNodes || !dragNodes.length || !targetNode) return;
+        
+        const dragNode = dragNodes[0];
+        const dragData = dragNode.getData();
+        const targetData = targetNode.getData();
+
+        if (!dragData || !targetData) return;
+
+        // 如果目标节点是可以有子节点的，并且是拖到节点上
+        const isDropToNode = name === 'MOVE_NODE_TO';
+        const canHaveChildren = !!targetData.originData?.showConf?.nodeType && [5,6,7].includes(targetData.originData.showConf.nodeType);
+
+        const params = {
+          app,
+          iceId,
+          editType: 6,
+          parentId: dragData.originData?.parentId,
+          selectId: dragData.originData?.showConf?.nodeId,
+          index: dragData.originData?.index,
+          moveTo: isDropToNode && canHaveChildren
+            ? 0
+            : (dragData.originData?.parentId === targetData.originData?.parentId && targetData.originData?.index > dragData.originData?.index
+              ? targetData.originData?.index
+              : targetData.originData?.index + 1),
+          moveToParentId: isDropToNode && canHaveChildren
+            ? targetData.originData?.showConf?.nodeId
+            : (dragData.originData?.parentId !== targetData.originData?.parentId ? targetData.originData?.parentId : undefined)
+        };
+
+        apis.editConf(params)
+          .then(() => {
+            refresh();
+            message.success('success');
+          })
+          .catch((err: any) => {
+            message.error(err.msg || 'server error');
+            refresh();
+          });
+      }
+    });
+
+    // 注册节点拖动结束事件
+    mindMapRef.current.on('node_dragend', (node: any, parent: any) => {
+      // 非server 不可移动
+      if (!!address && address !== 'server') {
+        return;
+      }
+      // 前置节点不可移动
+      if (node.data.data.isForward) {
+        return;
+      }
+      // 不可移动到根节点、前置节点的位置
+      const targetNode = transformMindMapToTree(parent);
+      if (!targetNode || targetNode.isRoot || targetNode.isForward) {
+        return;
+      }
+
+      const sourceNode = transformMindMapToTree(node);
+      if (!sourceNode) return;
+
+      const params = {
+        app,
+        iceId,
+        editType: 6,
+        parentId: sourceNode.parentId,
+        selectId: sourceNode.showConf.nodeId,
+        nextId: sourceNode.nextId,
+        index: sourceNode.index,
+        moveTo: targetNode.dragOver && !!RelationNodeMap.get(targetNode.showConf.nodeType) ? 0 : (sourceNode.parentId === targetNode.parentId && targetNode.index > sourceNode.index ? targetNode.index : targetNode.index + 1),
+        moveToParentId: targetNode.dragOver && !!RelationNodeMap.get(targetNode.showConf.nodeType) ? targetNode.showConf.nodeId : (sourceNode.parentId !== targetNode.parentId ? targetNode.parentId : undefined)
+      };
+
+      apis.editConf(params)
+        .then(() => {
+          refresh();
+          message.success('success');
+        })
+        .catch((err: any) => {
+          message.error(err.msg || 'server error');
+        });
+    });
+
     // 注册节点按钮点击事件
     mindMapRef.current.on('node_mousedown', (node: any, e: any) => {
       const target = e.target as Element;
@@ -446,47 +540,6 @@ const MindMapComponent = ({
           }
         }
       }
-    });
-
-    // 注册节点拖动事件
-    mindMapRef.current.on('node_drag', (node: any, parent: any) => {
-      // 非server 不可移动
-      if (!!address && address !== 'server') {
-        return;
-      }
-      // 前置节点不可移动
-      if (node.data.data.isForward) {
-        return;
-      }
-      // 不可移动到根节点、前置节点的位置
-      const targetNode = transformMindMapToTree(parent);
-      if (!targetNode || targetNode.isRoot || targetNode.isForward) {
-        return;
-      }
-
-      const sourceNode = transformMindMapToTree(node);
-      if (!sourceNode) return;
-
-      const params = {
-        app,
-        iceId,
-        editType: 6,
-        parentId: sourceNode.parentId,
-        selectId: sourceNode.showConf.nodeId,
-        nextId: sourceNode.nextId,
-        index: sourceNode.index,
-        moveTo: targetNode.dragOver && !!RelationNodeMap.get(targetNode.showConf.nodeType) ? 0 : (sourceNode.parentId === targetNode.parentId && targetNode.index > sourceNode.index ? targetNode.index : targetNode.index + 1),
-        moveToParentId: targetNode.dragOver && !!RelationNodeMap.get(targetNode.showConf.nodeType) ? targetNode.showConf.nodeId : (sourceNode.parentId !== targetNode.parentId ? targetNode.parentId : undefined)
-      };
-
-      apis.editConf(params)
-        .then(() => {
-          refresh()
-          message.success('success');
-        })
-        .catch((err: any) => {
-          message.error(err.msg || 'server error');
-        });
     });
 
     // 监听窗口大小变化

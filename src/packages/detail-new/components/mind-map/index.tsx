@@ -42,9 +42,6 @@ const transformTreeToMindMap = (treeItems: TreeItem[]): any => {
   const transformNode = (item: TreeItem, level: number = 0): any => {
     if (!item) return null;
 
-    // console.log('Transform node:', item);
-    // console.log('Is forward?', item.isForward);
-
     // Create node
     const node = {
       data: {
@@ -71,8 +68,6 @@ const transformTreeToMindMap = (treeItems: TreeItem[]): any => {
       children: []
     };
 
-    // console.log('Created node:', node);
-
     // Process children
     if (Array.isArray(item.children)) {
       const validChildren = item.children
@@ -88,7 +83,6 @@ const transformTreeToMindMap = (treeItems: TreeItem[]): any => {
   };
 
   const rootNode = transformNode(treeItems[0]);
-  // console.log('Final root node:', rootNode);
   return rootNode;
 };
 
@@ -176,7 +170,6 @@ const MindMapComponent = ({
     };
 
     const mindMapData = transformTreeToMindMap(treeList);
-    console.log('Mind Map Data:', mindMapData);
 
     const customTheme = {
       backgroundColor: '#fafafa',
@@ -244,9 +237,7 @@ const MindMapComponent = ({
 
     // 监听渲染完成事件
     mindMapRef.current.on('node_tree_render_end', async () => {
-      console.log('11. === node_tree_render_end ===');
       if (mindMapRef.current) {
-        console.log('12. Mind map instance:', mindMapRef.current);
         
         // 等待一帧确保渲染完成
         await new Promise(resolve => requestAnimationFrame(resolve));
@@ -256,19 +247,11 @@ const MindMapComponent = ({
         
         const renderer = mindMapRef.current.renderer;
         if (renderer) {
-          console.log('13. Renderer:', renderer);
-          console.log('14. Render tree:', renderer.renderTree);
           
           // 递归更新节点样式
           const updateNodeStyle = (node: any) => {
             if (!node || !node._node) return;
             
-            console.log('15. Updating node style:', {
-              data: node.data,
-              isForward: node.data.isForward,
-              node: node._node
-            });
-
             // 如果是转发节点，更新样式
             if (node.data.isForward) {
               const textElement = node._node.querySelector('text');
@@ -290,7 +273,6 @@ const MindMapComponent = ({
           updateNodeStyle(renderer.renderTree);
         }
       }
-      console.log('16. ========================');
     });
 
     // 注册节点点击事件
@@ -499,13 +481,10 @@ const MindMapComponent = ({
 
       apis.editConf(params)
         .then(() => {
-          console.log('MindMap editConf success, calling refresh')
           refresh()
-          console.log('MindMap refresh done')
           message.success('success');
         })
         .catch((err: any) => {
-          console.error('MindMap editConf error:', err)
           message.error(err.msg || 'server error');
         });
     });

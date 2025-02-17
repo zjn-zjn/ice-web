@@ -1,9 +1,10 @@
 import request from '../utils/request'
+import type { DetailData, ChildrenItem } from '../index.d'
 
 const API_PREFIX = '/ice-server'
 
 // 定义API响应类型
-interface ApiResponse<T = any> {
+export interface ApiResponse<T = any> {
   ret: number
   data: T
   msg?: string
@@ -40,10 +41,10 @@ const apis = {
 
   // 配置相关
   confList: (params?: any) =>
-    request.get<ApiResponse<ConfigListResponse>>(`${API_PREFIX}/base/list`, params),
+    request.get<ConfigListResponse>(`${API_PREFIX}/base/list`, params),
   
-  details: (params: { id: string | number }) =>
-    request.get<ApiResponse>(`${API_PREFIX}/conf/detail`, params),
+  details: (params: { app: number, iceId: number, address?: string }) =>
+    request.get<DetailData>(`${API_PREFIX}/conf/detail`, params),
   
   editConf: (data: any) =>
     request.post<ApiResponse>(`${API_PREFIX}/conf/edit`, data),

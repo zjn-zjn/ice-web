@@ -30,7 +30,7 @@ interface ConfigItem {
 /**
  * DetailData
  */
-interface DetailData {
+export interface DetailData {
   app: number
   confId: number
   iceId: number
@@ -41,7 +41,7 @@ interface DetailData {
 /**
  * ChildrenItem
  */
-interface ChildrenItem {
+export interface ChildrenItem {
   showConf: ShowConf
   children?: ChildrenItem[]
   parentId?: number

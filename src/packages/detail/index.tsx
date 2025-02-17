@@ -1,7 +1,8 @@
 import apis from '../../apis'
 import { useRequest } from 'ahooks'
 import type { TreeItem } from './components/tree'
-import MindMap from './components/mind-map'
+import type { DetailData, ChildrenItem } from '../../index.d'
+import MindMapComponent from './components/mind-map'
 import Edit from './components/edit'
 import { useCallback, useMemo, useState } from 'react'
 import { Button, Select, Space, Modal, message } from 'antd'
@@ -20,14 +21,12 @@ const Detail = () => {
   const [importVisible, setImportVisible] = useState(false)
   const [exportVisible, setExportVisible] = useState(false)
 
-  const { data, run } = useRequest<
+  const { data, run } = useRequest<DetailData, any>(
+    () => apis.details({ app, iceId, address} as any),
     {
-      data: DetailData
-    },
-    any[]
-  >(() => apis.details({ app, iceId, address }), {
-    refreshDeps: [app, iceId, address]
-  })
+      refreshDeps: [app, iceId, address]
+    }
+  )
 
   const getTreeList = useCallback(
     (list: ChildrenItem[]): TreeItem[] =>
@@ -49,21 +48,19 @@ const Detail = () => {
 
   const treeList = useMemo(() => {
     const root = data?.root
-    // console.log('root:', root)
     const result = root ? getTreeList([{ ...root, isRoot: true }]) : []
-    // console.log('treeList:', JSON.stringify(result, null, 2))
     return result
   }, [data?.root])
 
   const selectOptions = useMemo(() => {
     return [
       { label: 'Server', value: 'server' },
-      ...(data?.data?.registerClients || []).map((item) => ({
+      ...(data?.registerClients || []).map((item: string) => ({
         label: item,
         value: item
       }))
     ]
-  }, [data?.data?.registerClients])
+  }, [data?.registerClients])
 
   const openExportModal = () => {
     setExportVisible(true)
@@ -126,7 +123,7 @@ const Detail = () => {
         </Space>
       </div>
       <div className='tree-wrap'>
-        <MindMap
+        <MindMapComponent
           treeList={treeList}
           refresh={run}
           setSelectedNode={setSelectedNode}
@@ -146,17 +143,16 @@ const Detail = () => {
         />
       </div>
       <ImportModal
-        visible={importVisible}
+        open={importVisible}
         onCancel={() => setImportVisible(false)}
         onOk={() => {
           setImportVisible(false)
           run()
         }}
         app={app}
-        iceId={iceId}
       />
       <ExportModal
-        visible={exportVisible}
+        open={exportVisible}
         onCancel={() => setExportVisible(false)}
         onOk={() => {
           setExportVisible(false)

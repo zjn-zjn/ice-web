@@ -1,0 +1,1 @@
+declare module 'simple-mind-map/src/plugins/Drag.js'

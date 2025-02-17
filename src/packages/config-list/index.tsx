@@ -4,6 +4,7 @@ import { Button, Table, Form, Input, Space, message } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
 import apis from '../../apis'
 import { useRequest } from 'ahooks'
+import type { ApiResponse } from '../../apis'
 import ExportModal from './components/export-modal'
 import EditAddModal from './components/edit-add-modal'
 import DeleteModal from './components/delete-modal'
@@ -31,6 +32,11 @@ interface ConfigItem {
   confId: string
   debug: string
   [key: string]: any
+}
+
+interface ConfigListResponse {
+  list: ConfigItem[]
+  total: number
 }
 
 const ConfigList = () => {
@@ -71,8 +77,8 @@ const ConfigList = () => {
     data: response,
     run: getConfigList,
     loading
-  } = useRequest(
-    () => {
+  } = useRequest<ConfigListResponse, [void]>(
+    async () => {
       const params = {
         app: Number(app),
         pageId,
@@ -121,7 +127,7 @@ const ConfigList = () => {
       title: '操作',
       key: 'operation',
       width: 280,
-      render: (_, record: ConfigItem) => (
+      render: (record: ConfigItem) => (
         <Space>
           <Button
             type="link"

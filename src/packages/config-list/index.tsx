@@ -126,9 +126,9 @@ const ConfigList = () => {
           <Button
             type="link"
             size="small"
-            onClick={() => navigate(`/config/detail-new?app=${app}&iceId=${record.id}`)}
+            onClick={() => navigate(`/config/detail?app=${app}&iceId=${record.id}`)}
           >
-            查看详情-新
+            查看详情
           </Button>
           <Button
             type="link"

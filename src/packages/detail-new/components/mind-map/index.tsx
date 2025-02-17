@@ -65,7 +65,7 @@ const transformTreeToMindMap = (treeItems: TreeItem[]): any => {
         color: item.isForward ? '#f50' : undefined,
         borderColor: item.isForward ? '#f50' : undefined
       },
-      children: []
+      children: [] as any[]
     };
 
     // Process children
@@ -243,7 +243,7 @@ const MindMapComponent = ({
       allowDragNode: true,
       allowDragExtension: true,
       themeConfig: customTheme
-    });
+    } as any);
 
     // 监听渲染完成事件
     mindMapRef.current.on('node_tree_render_end', async () => {
@@ -548,6 +548,7 @@ const MindMapComponent = ({
         refresh={refresh}
         app={app}
         iceId={iceId}
+        address={address}
         closeModal={() => {
           setAddExchangeNodeModalObj((pre) => ({ ...pre, visible: false }));
         }}

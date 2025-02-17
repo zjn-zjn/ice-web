@@ -4,6 +4,7 @@ import { useRequest } from 'ahooks'
 import { TreeItem } from '../..'
 import { RelationNodeMap } from '../../constant'
 import { useState } from 'react'
+import type { ClassItem } from '../../../../../../index.d'
 
 const relationTypeOptions = [
   { label: 'Relation', value: 1 },

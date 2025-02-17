@@ -3,6 +3,7 @@ import apis from '../../../../apis'
 import { useRequest } from 'ahooks'
 import type { TreeItem } from '../tree'
 import { RelationNodeMap } from '../tree/constant'
+import type { ClassItem } from '../../../../index.d'
 import { useState } from 'react'
 
 const relationTypeOptions = [

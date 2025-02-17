@@ -46,12 +46,11 @@ const transformTreeToMindMap = (treeItems: TreeItem[]): any => {
     // Create node
     const node = {
       data: {
-        id: item.key || item.showConf?.uniqueKey,
-        text: `${item.text || item.showConf?.labelName}`,
+        id: item.showConf.uniqueKey,
+        text: `${item.showConf.labelName}`,
         expanded: true,
         direction: 2,
         isroot: item.isRoot,
-        originData: item,
         showConf: item.showConf,
         parentId: item.parentId,
         nextId: item.nextId,
@@ -74,7 +73,7 @@ const transformTreeToMindMap = (treeItems: TreeItem[]): any => {
       const validChildren = item.children
         .map(child => transformNode(child, level + 1))
         .filter(child => child !== null);
-      
+
       if (validChildren.length > 0) {
         node.children.push(...validChildren);
       }
@@ -90,12 +89,12 @@ const transformTreeToMindMap = (treeItems: TreeItem[]): any => {
 // 转换思维导图节点为树节点
 const transformMindMapToTree = (node: any): TreeItem | undefined => {
   if (!node?.nodeData) return undefined;
-  
+
   const { data } = node.nodeData;
   if (!data) return undefined;
 
-  const { showConf, isForward, isRoot, parentId, index, timeType, start, end } = data;
-  
+  const { showConf, isForward, isRoot, parentId, index, timeType, start, end, nextId, forwardId } = data;
+
   return {
     showConf,
     isForward,
@@ -105,6 +104,8 @@ const transformMindMapToTree = (node: any): TreeItem | undefined => {
     timeType,
     start,
     end,
+    nextId,
+    forwardId,
     key: showConf?.uniqueKey,
     text: showConf?.labelName,
     children: []
@@ -140,6 +141,7 @@ const MindMapComponent = ({
       title: `确认删除<${currentNode.showConf.labelName}>节点吗？`,
       onOk: async () => {
         try {
+          console.log(currentNode);
           await apis.editConf({
             app,
             iceId,
@@ -178,7 +180,7 @@ const MindMapComponent = ({
       lineColor: '#959da5',
       generalizationLineWidth: 1,
       generalizationLineColor: '#959da5',
-      
+
       root: {
         shape: 'rectangle',
         marginX: 50,
@@ -194,7 +196,7 @@ const MindMapComponent = ({
         borderRadius: 4,
         padding: [15, 15, 15, 15]
       },
-      
+
       second: {
         shape: 'rectangle',
         marginX: 100,
@@ -210,7 +212,7 @@ const MindMapComponent = ({
         borderRadius: 4,
         padding: [10, 10, 10, 10]
       },
-      
+
       node: {
         shape: 'rectangle',
         marginX: 50,
@@ -246,40 +248,11 @@ const MindMapComponent = ({
     // 监听渲染完成事件
     mindMapRef.current.on('node_tree_render_end', async () => {
       if (mindMapRef.current) {
-        
         // 等待一帧确保渲染完成
         await new Promise(resolve => requestAnimationFrame(resolve));
-        
+
         // 移动到最左边
         mindMapRef.current.view.translateXTo(-450);
-        
-        const renderer = mindMapRef.current.renderer;
-        if (renderer) {
-          
-          // 递归更新节点样式
-          const updateNodeStyle = (node: any) => {
-            if (!node || !node._node) return;
-            
-            // 如果是转发节点，更新样式
-            if (node.data.isForward) {
-              const textElement = node._node.querySelector('text');
-              const rectElement = node._node.querySelector('rect');
-              
-              if (textElement) {
-                textElement.style.fill = '#f50';
-              }
-              
-              if (rectElement) {
-                rectElement.style.stroke = '#f50';
-              }
-            }
-
-            // 递归处理子节点
-            node.children?.forEach((child: any) => updateNodeStyle(child));
-          };
-
-          updateNodeStyle(renderer.renderTree);
-        }
       }
     });
 
@@ -294,17 +267,25 @@ const MindMapComponent = ({
     mindMapRef.current.on('node_mouseenter', (node: any, e: any) => {
       const nodeEl = e.target;
 
-      // 清理所有节点的按钮和hover区域
+      // 只清除其他节点的按钮和hover区域
       const allButtons = document.querySelectorAll('.node-buttons');
       const allHoverAreas = document.querySelectorAll('.hover-area');
-      allButtons.forEach(btn => btn.remove());
-      allHoverAreas.forEach(area => area.remove());
+      allButtons.forEach(btn => {
+        if (!nodeEl.contains(btn)) {
+          btn.remove();
+        }
+      });
+      allHoverAreas.forEach(area => {
+        if (!nodeEl.contains(area)) {
+          area.remove();
+        }
+      });
 
-      // 即使已经有按钮组也重新创建，确保状态一致
+      // 检查当前节点是否已经有按钮
       const existingButtons = nodeEl.querySelector('.node-buttons');
-      const existingHoverArea = nodeEl.querySelector('.hover-area');
-      if (existingButtons) existingButtons.remove();
-      if (existingHoverArea) existingHoverArea.remove();
+      if (existingButtons) {
+        return; // 如果已经有按钮，就不需要再创建了
+      }
 
       const data = node.nodeData.data;
       const showConf = data?.showConf;
@@ -367,8 +348,17 @@ const MindMapComponent = ({
       const buttonsGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
       buttonsGroup.setAttribute('class', 'node-buttons');
       const buttonWidth = buttons.length * 24;
-      const xOffset = (node.width - buttonWidth) / 2 + 5;
-      buttonsGroup.setAttribute('transform', `translate(${xOffset}, ${-node.height/2})`);
+      const xOffset = (node.width - buttonWidth) / 2;
+      buttonsGroup.setAttribute('transform', `translate(${xOffset}, ${-node.height / 2})`);
+
+      // 添加按钮组背景
+      const groupBackground = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+      groupBackground.setAttribute('width', `${buttonWidth}`);
+      groupBackground.setAttribute('height', '20');
+      groupBackground.setAttribute('fill', 'transparent');
+      groupBackground.setAttribute('rx', '2');
+      groupBackground.setAttribute('ry', '2');
+      buttonsGroup.appendChild(groupBackground);
 
       // 添加按钮
       buttons.forEach((btn, index) => {
@@ -376,10 +366,6 @@ const MindMapComponent = ({
         button.setAttribute('class', `tree-btn ${btn.type}`);
         button.setAttribute('transform', `translate(${index * 24}, 0)`);
         button.style.cursor = 'pointer';
-
-        const title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
-        title.textContent = btn.title;
-        button.appendChild(title);
 
         const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
         rect.setAttribute('width', '20');
@@ -394,6 +380,80 @@ const MindMapComponent = ({
         path.setAttribute('transform', 'scale(0.016)');
         path.setAttribute('fill', btn.fill);
         button.appendChild(path);
+
+        // 创建并定位tooltip
+        const foreignObject = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+        foreignObject.setAttribute('width', '200');
+        foreignObject.setAttribute('height', '25');
+        foreignObject.setAttribute('x', '-90');  // 这个值会在下面动态计算
+        foreignObject.setAttribute('y', '-22');
+
+        const title = document.createElement('div');
+        title.setAttribute('style', `
+          visibility: hidden;
+          background-color: rgba(0, 0, 0, 0.75);
+          color: white;
+          padding: 1px 6px;
+          border-radius: 3px;
+          font-size: 12px;
+          position: absolute;
+          white-space: nowrap;
+          transition: visibility 0s linear 500ms;
+        `);
+        title.textContent = btn.title;
+        foreignObject.appendChild(title);
+
+        // 添加hover事件
+        button.addEventListener('mouseenter', () => {
+          // 计算tooltip的位置，使其居中对齐
+          const titleWidth = title.offsetWidth;
+          const buttonWidth = 20; // 按钮的宽度
+          const xOffset = (buttonWidth - titleWidth) / 2;
+          foreignObject.setAttribute('x', `${xOffset}`);
+
+          setTimeout(() => {
+            if (button.matches(':hover')) {
+              title.style.visibility = 'visible';
+            }
+          }, 500);
+        });
+
+        button.addEventListener('mouseleave', () => {
+          title.style.visibility = 'hidden';
+        });
+
+        button.appendChild(foreignObject);
+
+        // 直接添加点击事件
+        button.addEventListener('mousedown', (e) => {
+          e.stopPropagation();
+          const treeNode = transformMindMapToTree(node);
+          if (!treeNode) return;
+
+          // 设置当前选中的节点
+          setSelectedNode(treeNode);
+
+          if (btn.type === 'add-child') {
+            setAddExchangeNodeModalObj({
+              visible: true,
+              modalType: 'child'
+            });
+          } else if (btn.type === 'add-forward') {
+            setAddExchangeNodeModalObj({
+              visible: true,
+              modalType: 'front'
+            });
+          } else if (btn.type === 'exchange') {
+            setAddExchangeNodeModalObj({
+              visible: true,
+              modalType: 'exchange'
+            });
+          } else if (btn.type === 'delete') {
+            if (!treeNode.isRoot) {
+              deleteNode(treeNode);
+            }
+          }
+        });
 
         buttonsGroup.appendChild(button);
       });
@@ -413,7 +473,7 @@ const MindMapComponent = ({
         const rect = hoverArea.getBoundingClientRect();
         const x = e.clientX;
         const y = e.clientY;
-        
+
         if (x < rect.left || x > rect.right || y < rect.top || y > rect.bottom) {
           if (buttonsGroup) {
             buttonsGroup.style.display = 'none';
@@ -427,33 +487,32 @@ const MindMapComponent = ({
       console.log("afterExecCommand", name, args);
       if (name === 'MOVE_NODE_TO' || name === 'INSERT_AFTER' || name === 'INSERT_BEFORE') {
         const [dragNodes, targetNode] = args;
+
         if (!dragNodes || !dragNodes.length || !targetNode) return;
-        
+
         const dragNode = dragNodes[0];
         const dragData = dragNode.getData();
         const targetData = targetNode.getData();
-
         if (!dragData || !targetData) return;
-
         // 如果目标节点是可以有子节点的，并且是拖到节点上
-        const isDropToNode = name === 'MOVE_NODE_TO';
-        const canHaveChildren = !!targetData.originData?.showConf?.nodeType && [5,6,7].includes(targetData.originData.showConf.nodeType);
-
+        const moveTo = name === 'MOVE_NODE_TO';
+        const before = name === 'INSERT_BEFORE';
+        const after = name === 'INSERT_AFTER';
+        const canHaveChildren = ![5, 6, 7].includes(targetData.showConf.nodeType);
+        if (!canHaveChildren && moveTo) return;
         const params = {
           app,
           iceId,
           editType: 6,
-          parentId: dragData.originData?.parentId,
-          selectId: dragData.originData?.showConf?.nodeId,
-          index: dragData.originData?.index,
-          moveTo: isDropToNode && canHaveChildren
-            ? 0
-            : (dragData.originData?.parentId === targetData.originData?.parentId && targetData.originData?.index > dragData.originData?.index
-              ? targetData.originData?.index
-              : targetData.originData?.index + 1),
-          moveToParentId: isDropToNode && canHaveChildren
-            ? targetData.originData?.showConf?.nodeId
-            : (dragData.originData?.parentId !== targetData.originData?.parentId ? targetData.originData?.parentId : undefined)
+          parentId: dragData.parentId,
+          selectId: dragData.showConf?.nodeId,
+          index: dragData.index,
+          moveTo: moveTo
+            ? undefined
+            : (before ? targetData.index : after ? targetData.index + 1 : undefined),
+          moveToParentId: moveTo
+            ? targetData.showConf?.nodeId
+            : targetData.parentId
         };
 
         apis.editConf(params)
@@ -465,41 +524,6 @@ const MindMapComponent = ({
             message.error(err.msg || 'server error');
             refresh();
           });
-      }
-    });
-
-    // 注册节点按钮点击事件
-    mindMapRef.current.on('node_mousedown', (node: any, e: any) => {
-      const target = e.target as Element;
-      const button = target.closest('.tree-btn');
-      if (button) {
-        e.stopPropagation();
-        const treeNode = transformMindMapToTree(node);
-        if (!treeNode) return;
-
-        // 设置当前选中的节点
-        setSelectedNode(treeNode);
-
-        if (button.classList.contains('add-child')) {
-          setAddExchangeNodeModalObj({
-            visible: true,
-            modalType: 'child'
-          });
-        } else if (button.classList.contains('add-forward')) {
-          setAddExchangeNodeModalObj({
-            visible: true,
-            modalType: 'front'
-          });
-        } else if (button.classList.contains('exchange')) {
-          setAddExchangeNodeModalObj({
-            visible: true,
-            modalType: 'exchange'
-          });
-        } else if (button.classList.contains('delete')) {
-          if (!treeNode.isRoot) {
-            deleteNode(treeNode);
-          }
-        }
       }
     });
 

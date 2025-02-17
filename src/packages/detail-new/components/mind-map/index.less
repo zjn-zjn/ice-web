@@ -30,6 +30,25 @@
       &:hover {
         opacity: 0.8;
       }
+
+      title {
+        visibility: hidden;
+        pointer-events: none;
+        background-color: rgba(0, 0, 0, 0.75);
+        color: white;
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-size: 12px;
+        position: absolute;
+        transform: translateY(-100%);
+        white-space: nowrap;
+        transition: visibility 0s linear 1s;
+      }
+
+      &:hover title {
+        visibility: visible;
+        transition-delay: 1s;
+      }
     }
   }
 
@@ -46,6 +65,25 @@
     margin-left: 8px;
     &:hover {
       opacity: 0.8;
+    }
+
+    title {
+      visibility: hidden;
+      pointer-events: none;
+      background-color: rgba(0, 0, 0, 0.75);
+      color: white;
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      position: absolute;
+      transform: translateY(-100%);
+      white-space: nowrap;
+      transition: visibility 0s linear 1s;
+    }
+
+    &:hover title {
+      visibility: visible;
+      transition-delay: 1s;
     }
   }
 }

@@ -1,4 +1,4 @@
-import apis from '../../apis'
+import apis, { ApiResponse } from '../../apis'
 import { useEffect, useState } from 'react'
 import { Button, Modal, Form, Input, message } from 'antd'
 import { FormOutlined, PlusOutlined } from '@ant-design/icons'
@@ -31,11 +31,9 @@ const AppList = () => {
     id: 0
   })
 
-  const { data: response, run: getList } = useRequest<{ list: AppItem[] }>(
+  const { data: response, run: getList } = useRequest(
     () => apis.appList(),
-    {
-      formatResult: (res) => res.data
-    }
+    {}
   )
 
   const { run: handleEdit, loading } = useRequest(

@@ -185,7 +185,7 @@ const MindMapComponent = ({
         shape: 'rectangle',
         marginX: 50,
         marginY: 0,
-        fillColor: '#b8fcb8',
+        fillColor: '#86b4da',
         fontFamily: '微软雅黑, Microsoft YaHei',
         color: '#333',
         fontSize: 16,
@@ -233,7 +233,7 @@ const MindMapComponent = ({
     MindMap.usePlugin(Drag);
 
     mindMapRef.current = new MindMap({
-      el: containerRef.current.querySelector('.mind-map-container'),
+      el: containerRef.current,
       data: mindMapData,
       layout: 'logicalStructure',
       direction: 2,
@@ -553,8 +553,8 @@ const MindMapComponent = ({
   }, [treeList]);
 
   return (
-    <div ref={containerRef} className="mind-map-wrapper">
-      <div className="mind-map-container"></div>
+    <>
+      <div ref={containerRef} className="mind-map-container"></div>
       <AddExchangeNodeModal
         selectedNode={selectedNode}
         refresh={refresh}
@@ -566,7 +566,7 @@ const MindMapComponent = ({
         }}
         {...addExchangeNodeModalObj}
       />
-    </div>
+    </>
   );
 };
 

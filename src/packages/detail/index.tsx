@@ -122,17 +122,15 @@ const Detail = () => {
           <Button onClick={clean}>清除</Button>
         </Space>
       </div>
-      <div className='tree-wrap'>
-        <MindMapComponent
-          treeList={treeList}
-          refresh={run}
-          setSelectedNode={setSelectedNode}
-          selectedNode={selectedNode}
-          app={app}
-          iceId={iceId}
-          address={address}
-        />
-      </div>
+      <MindMapComponent
+        treeList={treeList}
+        refresh={run}
+        setSelectedNode={setSelectedNode}
+        selectedNode={selectedNode}
+        app={app}
+        iceId={iceId}
+        address={address}
+      />
       <div className='edit-wrap'>
         <Edit
           app={app}

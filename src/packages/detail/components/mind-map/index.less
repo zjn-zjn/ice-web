@@ -1,61 +1,17 @@
-.mind-map-wrapper {
+.mind-map-container {
   width: 100%;
-  height: 800px;
+  height: 100%;
   position: relative;
   border: 1px solid #e8e8e8;
   border-radius: 2px;
   margin: 16px 0;
   overflow: hidden;
-
-  .mind-map-container {
-    width: 100%;
-    height: 100%;
-    background: #fff;
-    border: 1px solid #d9d9d9;
-    border-radius: 2px;
-    margin: 16px 0;
-    overflow: hidden;
-
-    .smm-node {
-      &[data-isforward="true"] {
-        .smm-text {
-          color: #ff4d4f;
-        }
-      }
-    }
-
-    .tree-btn {
-      cursor: pointer;
-      margin-left: 8px;
-      &:hover {
-        opacity: 0.8;
-      }
-
-      title {
-        visibility: hidden;
-        pointer-events: none;
-        background-color: rgba(0, 0, 0, 0.75);
-        color: white;
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        position: absolute;
-        transform: translateY(-100%);
-        white-space: nowrap;
-        transition: visibility 0s linear 1s;
-      }
-
-      &:hover title {
-        visibility: visible;
-        transition-delay: 1s;
-      }
-    }
-  }
+  background: #fff;
 
   .smm-node {
     &[data-isforward="true"] {
       .smm-text {
-        color: #f50 !important;
+        color: #ff4d4f;
       }
     }
   }

@@ -1,3 +1,11 @@
 .ant-layout {
   background: #fff;
+  touch-action: none;
+  overscroll-behavior: none;
+}
+
+/* 禁用所有可能的滑动手势 */
+html, body {
+  overscroll-behavior-x: none;
+  touch-action: pan-y pinch-zoom;
 }

@@ -17,7 +17,7 @@ const CustomDatePicker: FC<DatePickerProps> = ({
     <DatePicker
       format='YYYY-MM-DD HH:mm:ss'
       {...otherProps}
-      onChange={dateOnChange}
+      onChange={dateOnChange as any}
       value={value && dayjs(value)}
     />
   )

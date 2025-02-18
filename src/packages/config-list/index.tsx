@@ -207,12 +207,15 @@ const ConfigList = () => {
     <div className="config-list">
       <div className="header">
         <Space>
-          <Button type="primary" onClick={() => setEditObj({ visible: true })}>
-            新建
+          <Button type="primary" style={{left: '12px' , top: '6px'}} onClick={() => setEditObj({ visible: true }
+            
+          )}>
+            新增
           </Button>
-          <Button onClick={() => setImportVisible(true)}>导入</Button>
+          <Button style={{left: '16px', top: '6px' }} onClick={() => setImportVisible(true)}>导入</Button>
         </Space>
         <Form
+          style={{ position: 'relative', top: '12px', left: '12px' }}
           form={form}
           layout="inline"
           onFinish={() => {
@@ -237,6 +240,7 @@ const ConfigList = () => {
         </Form>
       </div>
       <Table
+        style={{ position: 'relative', top: '18px', left: '12px' }}
         columns={columns}
         dataSource={list}
         rowKey="id"

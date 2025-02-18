@@ -1,9 +1,9 @@
+import apis from '../../apis'
 import { useEffect, useState } from 'react'
 import { Button, Modal, Form, Input, message } from 'antd'
 import { FormOutlined, PlusOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useRequest } from 'ahooks'
-import request from '../../utils/request'
 import './index.less'
 
 interface AppItem {
@@ -32,14 +32,14 @@ const AppList = () => {
   })
 
   const { data: response, run: getList } = useRequest<{ list: AppItem[] }>(
-    () => request.get('/ice-server/app/list'),
+    () => apis.appList(),
     {
       formatResult: (res) => res.data
     }
   )
 
   const { run: handleEdit, loading } = useRequest(
-    (params: Partial<AppItem>) => request.post('/ice-server/app/edit', params),
+    (params: Partial<AppItem>) => apis.appEdit(params),
     {
       manual: true,
       onSuccess: () => {
@@ -50,7 +50,6 @@ const AppList = () => {
     }
   )
 
-  // 当 editModel 改变时更新表单数据
   useEffect(() => {
     if (editModel.open) {
       form.setFieldsValue({
@@ -75,10 +74,8 @@ const AppList = () => {
     try {
       const values = await form.validateFields()
       if (editModel.type === 2) {
-        // 编辑时才传入 id
         await handleEdit({ ...values, id: editModel.id })
       } else {
-        // 新建时只传入 name 和 info
         await handleEdit(values)
       }
     } catch (error) {
@@ -93,35 +90,34 @@ const AppList = () => {
   const list = response?.list || []
 
   return (
-    <div className="app-list">
-      <div className="header">
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={() =>
-            setEditModel({
-              type: 1,
-              open: true,
-              name: '',
-              info: '',
-              id: 0
-            })
-          }
-        >
-          新建应用
-        </Button>
-      </div>
-      <div className="content">
-        {list.map((item) => (
-          <div key={item.id} className="item" onClick={() => linkToList(item.id)}>
-            <div className="item-header">
-              <span className="title">{item.name}</span>
-              <span className="id">ID: {item.id}</span>
-            </div>
-            <div className="desc">{item.info}</div>
-            <div className="operation" onClick={(e) => e.stopPropagation()}>
+    <div>
+      <Button 
+        type="primary"
+        icon={<PlusOutlined />} 
+        onClick={() => setEditModel({
+          type: 1,
+          open: true,
+          name: '',
+          info: '',
+          id: 0
+        })}
+        style={{ padding: '12px 12px', top: '6px', left: '12px' }}
+      >
+        新增
+      </Button>
+      <div className='app-list'>
+        {list.map((item: AppItem) => (
+          <div
+            key={item.id}
+            className='app-item'
+            onClick={() => {
+              linkToList(item.id)
+            }}
+          >
+            <div className='app-edit'>
               <FormOutlined
-                onClick={() =>
+                onClick={(e: any) => {
+                  e.stopPropagation()
                   setEditModel({
                     type: 2,
                     open: true,
@@ -129,59 +125,38 @@ const AppList = () => {
                     info: item.info,
                     id: item.id
                   })
-                }
+                }}
               />
             </div>
+            <p>{item.name}</p>
+            <p>app: {item.id} </p>
+            <p>{item.info}</p>
           </div>
         ))}
-        {list.length === 0 && (
-          <div className="empty">
-            <div className="empty-text">暂无应用</div>
-            <Button 
-              type="primary"
-              icon={<PlusOutlined />}
-              onClick={() =>
-                setEditModel({
-                  type: 1,
-                  open: true,
-                  name: '',
-                  info: '',
-                  id: 0
-                })
-              }
-            >
-              新建应用
-            </Button>
-          </div>
-        )}
       </div>
       <Modal
-        title={editModel.type === 1 ? '新建应用' : '编辑应用'}
+        title={editModel.type === 1 ? '新增' : '编辑'}
         open={editModel.open}
         onOk={onOk}
         onCancel={closeModal}
+        okText='确认'
+        cancelText='取消'
         confirmLoading={loading}
-        destroyOnClose
       >
-        <Form 
-          form={form}
-          labelCol={{ span: 4 }} 
-          wrapperCol={{ span: 20 }}
-          preserve={false}
-        >
+        <Form form={form}>
           <Form.Item
-            label="名称"
-            name="name"
-            rules={[{ required: true, message: '请输入应用名称' }]}
+            label='名称'
+            name='name'
+            rules={[{ required: true, message: '请输入名称' }]}
           >
-            <Input placeholder="请输入应用名称" />
+            <Input />
           </Form.Item>
           <Form.Item
-            label="描述"
-            name="info"
-            rules={[{ required: true, message: '请输入应用描述' }]}
+            label='描述'
+            name='info'
+            rules={[{ required: true, message: '请输入描述' }]}
           >
-            <Input.TextArea placeholder="请输入应用描述" />
+            <Input />
           </Form.Item>
         </Form>
       </Modal>

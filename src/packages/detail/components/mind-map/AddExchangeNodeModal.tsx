@@ -41,25 +41,21 @@ const AddExchangeNodeModal = ({
 }: Props) => {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
-  const { data, run: getClass } = useRequest<
-    {
-      data: ClassItem[]
-    },
-    any[]
-  >(
+  const { data: classList, run: getClass } = useRequest<ClassItem[], any[]>(
     (type: number) =>
       apis.getClass({
         app,
         type
       }),
     {
-      manual: true
+      manual: true,
+      refreshDeps: [app]
     }
   )
 
   const onRelationTypeChange = (value: number) => {
-    if (value === 1) {
-      getClass(1)
+    if ([5, 6, 7].includes(value)) {
+      getClass(value)
     }
   }
 
@@ -75,7 +71,7 @@ const AddExchangeNodeModal = ({
         selectId: selectedNode?.showConf.nodeId,
         nextId: selectedNode?.nextId,
         index: selectedNode?.index,
-        nodeType: values.nodeType,
+        nodeType: values.relationType === 1 ? values.nodeType : values.relationType,
         name: values.name,
         clazz: values.clazz,
         field: values.field,
@@ -84,21 +80,13 @@ const AddExchangeNodeModal = ({
         confField: values.confField,
         multiplexIds: values.multiplexIds
       }
-      console.log('AddExchangeNodeModal editConf params:', params)
       await apis.editConf(params)
-      console.log('AddExchangeNodeModal editConf success')
       await new Promise(resolve => setTimeout(resolve, 100))
-      console.log('AddExchangeNodeModal calling refresh')
       refresh()
-      console.log('AddExchangeNodeModal refresh done')
       message.success('success')
-      console.log('AddExchangeNodeModal calling closeModal')
       closeModal()
-      console.log('AddExchangeNodeModal closeModal done')
     } catch (err: any) {
-      console.error('AddExchangeNodeModal error:', err)
       if (err.errorFields) {
-        console.log('AddExchangeNodeModal form validation error:', err.errorFields)
         return
       }
       message.error(err.msg || 'server error')
@@ -156,7 +144,7 @@ const AddExchangeNodeModal = ({
                     <Select options={nodeTypeOptions} />
                   </Form.Item>
                 )}
-                {relationType !== 1 && relationType !== 13 && (
+                {[5, 6, 7].includes(relationType) && (
                   <>
                     <Form.Item
                       name='confName'
@@ -166,14 +154,21 @@ const AddExchangeNodeModal = ({
                       <Select
                         showSearch
                         optionFilterProp='label'
-                        options={(data?.data || []).map((item) => ({
-                          label:
-                            item.fullName.substring(
-                              item.fullName.lastIndexOf('.') + 1
-                            ) + (item.name ? '(' + item.name + ')' : ''),
-                          value: item.fullName
-                        }))}
-                      />
+                        placeholder="请选择节点类"
+                        loading={!classList}
+                        allowClear
+                      >
+                        {classList?.map((item) => (
+                          <Select.Option 
+                            key={item.fullName} 
+                            value={item.fullName}
+                            title={item.fullName}
+                          >
+                            {item.fullName.substring(item.fullName.lastIndexOf('.') + 1)}
+                            {item.name ? `(${item.name})` : ''}
+                          </Select.Option>
+                        ))}
+                      </Select>
                     </Form.Item>
                     <Form.Item name='confField' label='配置Json'>
                       <Input.TextArea rows={6} />

@@ -242,6 +242,16 @@ const MindMapComponent = ({
       mouseSelectionShow: true,
       allowDragNode: true,
       allowDragExtension: true,
+      beforeDragEnd: ({ overlapNodeUid }) => {
+        // 获取目标节点
+        const overlapNode = mindMapRef.current.renderer.findNodeByUid(overlapNodeUid);
+        if (!overlapNode) return false;
+        // 如果目标节点是叶子节点，阻止拖放
+        if ([5, 6, 7].includes(overlapNode.getData('showConf').nodeType)) {
+          return true;
+        }
+        return false;
+      },
       themeConfig: customTheme
     } as any);
 
@@ -512,7 +522,8 @@ const MindMapComponent = ({
             : (before ? targetData.index : after ? targetData.index + 1 : undefined),
           moveToParentId: moveTo
             ? targetData.showConf?.nodeId
-            : targetData.parentId
+            : targetData.parentId,
+          nextId: dragData.nextId
         };
 
         apis.editConf(params)

@@ -199,8 +199,8 @@ const MindMapComponent = ({
 
       second: {
         shape: 'rectangle',
-        marginX: 100,
-        marginY: 40,
+        marginX: 20,
+        marginY: 0,
         fillColor: '#fff',
         fontFamily: '微软雅黑, Microsoft YaHei',
         color: '#333',
@@ -215,7 +215,7 @@ const MindMapComponent = ({
 
       node: {
         shape: 'rectangle',
-        marginX: 50,
+        marginX: 20,
         marginY: 0,
         fillColor: '#fff',
         fontFamily: '微软雅黑, Microsoft YaHei',
@@ -348,7 +348,7 @@ const MindMapComponent = ({
       const hoverArea = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
       hoverArea.setAttribute('class', 'hover-area');
       hoverArea.setAttribute('x', '0');
-      hoverArea.setAttribute('y', '0');
+      hoverArea.setAttribute('y', `${-node.height / 2 + 10}`); // 只覆盖按钮区域上方一点点
       hoverArea.setAttribute('width', `${node.width}`);
       hoverArea.setAttribute('height', `${node.height + 40}`);
       hoverArea.setAttribute('fill', 'transparent');
@@ -418,7 +418,7 @@ const MindMapComponent = ({
           // 计算tooltip的位置，使其居中对齐
           const titleWidth = title.offsetWidth;
           const buttonWidth = 20; // 按钮的宽度
-          const xOffset = (buttonWidth - titleWidth) / 2;
+          const xOffset = (buttonWidth - titleWidth) / 2 + 100;
           foreignObject.setAttribute('x', `${xOffset}`);
 
           setTimeout(() => {

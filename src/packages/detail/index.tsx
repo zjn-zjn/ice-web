@@ -1,6 +1,6 @@
 import apis from '../../apis'
 import { useRequest } from 'ahooks'
-import type { TreeItem } from './components/tree'
+import type { TreeItem } from './types'
 import type { DetailData, ChildrenItem } from '../../index.d'
 import MindMapComponent from './components/mind-map'
 import Edit from './components/edit'

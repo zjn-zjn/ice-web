@@ -1,3 +1,10 @@
+import type { ChildrenItem } from '../../index.d'
+
+export interface TreeItem extends Omit<ChildrenItem, 'children'> {
+  key: string
+  children: TreeItem[]
+}
+
 export const RelationNodeMap = new Map([
   [0, 'NONE'],
   [1, 'AND'],

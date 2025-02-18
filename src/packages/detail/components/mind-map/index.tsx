@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import MindMap from 'simple-mind-map';
-import type { TreeItem } from '../tree';
+import type { TreeItem } from '../../types';
 import './index.less';
 import { Modal, message, Tooltip } from 'antd';
 import AddExchangeNodeModal from './AddExchangeNodeModal';
@@ -12,7 +12,7 @@ import {
   PlusSquareTwoTone,
   DeleteOutlined
 } from '@ant-design/icons';
-import { RelationNodeMap } from '../tree/constant';
+import { RelationNodeMap } from '../../types';
 
 interface Props {
   treeList: TreeItem[];
@@ -517,11 +517,12 @@ const MindMapComponent = ({
           parentId: dragData.parentId,
           selectId: dragData.showConf?.nodeId,
           index: dragData.index,
-          moveTo: moveTo
-            ? undefined
+          moveTo: moveTo? undefined
+            : targetData.isForward ? 0 
             : (before ? targetData.index : after ? targetData.index + 1 : undefined),
           moveToParentId: moveTo
             ? targetData.showConf?.nodeId
+            : targetData.isForward ? targetData.nextId
             : targetData.parentId,
           nextId: dragData.nextId
         };

@@ -1,8 +1,8 @@
 import { Modal, Input, Form, Select, message } from 'antd'
 import apis from '../../../../apis'
 import { useRequest } from 'ahooks'
-import type { TreeItem } from '../tree'
-import { RelationNodeMap } from '../tree/constant'
+import type { TreeItem } from '../../types'
+import { RelationNodeMap } from '../../types'
 import type { ClassItem } from '../../../../index.d'
 import { useState } from 'react'
 

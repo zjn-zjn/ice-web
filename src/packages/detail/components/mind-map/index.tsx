@@ -237,12 +237,15 @@ const MindMapComponent = ({
       data: mindMapData,
       layout: 'logicalStructure',
       direction: 2,
-      draggable: true,
+      draggable: address === 'server',  // 只有 server 才能拖动
       mousewheelZoom: true,
       mouseSelectionShow: true,
-      allowDragNode: true,
-      allowDragExtension: true,
+      allowDragNode: address === 'server',  // 只有 server 才能拖动节点
+      allowDragExtension: address === 'server',  // 只有 server 才能拖动扩展
       beforeDragEnd: ({ overlapNodeUid }) => {
+        // 如果不是 server，禁止拖动
+        if (address !== 'server') return true;
+        
         // 获取目标节点
         const overlapNode = mindMapRef.current.renderer.findNodeByUid(overlapNodeUid);
         if (!overlapNode) return false;
@@ -262,7 +265,8 @@ const MindMapComponent = ({
         await new Promise(resolve => requestAnimationFrame(resolve));
 
         // 移动到最左边
-        mindMapRef.current.view.translateXTo(-450);
+        mindMapRef.current.view.translateXTo(-400);
+        mindMapRef.current.view.translateYTo(-50);
       }
     });
 
@@ -275,6 +279,9 @@ const MindMapComponent = ({
 
     // 注册节点 hover 事件
     mindMapRef.current.on('node_mouseenter', (node: any, e: any) => {
+      // 如果不是 server，不显示操作按钮
+      if (address !== 'server') return;
+
       const nodeEl = e.target;
 
       // 只清除其他节点的按钮和hover区域

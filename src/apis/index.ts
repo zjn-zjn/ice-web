@@ -30,6 +30,15 @@ interface ConfigListResponse {
   total: number
 }
 
+interface HistoryItem {
+  id: number
+  app: number
+  iceId: number
+  reason?: string
+  operator: string
+  createAt: string
+}
+
 // 创建API请求函数
 const apis = {
   // App相关
@@ -53,17 +62,17 @@ const apis = {
     request.get<ApiResponse>(`${API_PREFIX}/conf/leaf/class`, params),
   
   // 备份相关
-  pushConf: (params: { id: string | number }) =>
-    request.get<ApiResponse>(`${API_PREFIX}/base/backup`, params),
+  pushConf: (params: { iceId: string | number, app: string | number, reason?: string }) =>
+    request.get(`${API_PREFIX}/base/backup`, params),
   
-  pushHistory: (params: { id: string | number }) =>
-    request.get<ApiResponse>(`${API_PREFIX}/base/backup/history`, params),
+  pushHistory: (params: { app: string | number, iceId: string | number }) =>
+    request.get<{ list: HistoryItem[] }>(`${API_PREFIX}/base/backup/history`, params),
   
-  rollback: (params: { id: string | number }) =>
-    request.get<ApiResponse>(`${API_PREFIX}/base/rollback`, params),
+  rollback: (params: { pushId: number }) =>
+    request.get(`${API_PREFIX}/base/rollback`, params),
   
-  deleteHistory: (params: { id: string | number }) =>
-    request.get<ApiResponse>(`${API_PREFIX}/base/backup/delete`, params),
+  deleteHistory: (params: { pushId: number }) =>
+    request.get(`${API_PREFIX}/base/backup/delete`, params),
   
   // ICE相关
   iceEdit: (data: any) =>

@@ -14,7 +14,7 @@ interface Props {
 const BackupModal = ({ open, iceId, onCancel, onOk, app }: Props) => {
   const [form] = Form.useForm()
   const { run, loading } = useRequest(
-    (params: object) => apis.pushConf(params),
+    (params: { reason?: string }) => apis.pushConf({ ...params, iceId, app }),
     {
       manual: true,
       onSuccess: () => {
@@ -35,8 +35,6 @@ const BackupModal = ({ open, iceId, onCancel, onOk, app }: Props) => {
 
   const handleOk = () => {
     run({
-      app,
-      iceId,
       ...form.getFieldsValue()
     })
   }

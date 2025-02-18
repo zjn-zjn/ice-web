@@ -1,4 +1,4 @@
-import axios, { AxiosRequestConfig, AxiosResponse, AxiosError } from 'axios'
+import axios, { AxiosRequestConfig, AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios'
 import qs from 'qs'
 import { message } from 'antd'
 
@@ -11,7 +11,7 @@ interface ApiResponse<T = any> {
   msg?: string
 }
 
-interface RequestConfig extends AxiosRequestConfig {
+interface RequestConfig extends InternalAxiosRequestConfig {
   hideErrorMessage?: boolean
 }
 
@@ -23,7 +23,7 @@ const instance = axios.create({
 
 // 请求拦截器
 instance.interceptors.request.use(
-  (config) => {
+  (config: RequestConfig) => {
     // 可以在这里添加token等认证信息
     return config
   },
@@ -39,13 +39,13 @@ instance.interceptors.response.use(
     if (data.ret === 0) {
       return data.data
     }
-    if (!response.config.hideErrorMessage) {
+    if (!(response.config as RequestConfig).hideErrorMessage) {
       message.error(data.msg || '请求失败')
     }
     return Promise.reject(data)
   },
   (error: AxiosError) => {
-    if (!error.config?.hideErrorMessage) {
+    if (!(error.config as RequestConfig)?.hideErrorMessage) {
       message.error(error.message || '网络错误')
     }
     return Promise.reject(error)

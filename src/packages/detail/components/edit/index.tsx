@@ -15,6 +15,7 @@ import { useRequest } from 'ahooks'
 import apis from '../../../../apis'
 import { CustomDatePicker } from '../../../../components'
 import TextArea from 'antd/es/input/TextArea'
+import type { ChildrenItem, FieldItem as IFieldItem } from '../../../../index.d'
 
 const { Panel } = Collapse
 
@@ -26,14 +27,14 @@ const TimeTypeOptions = [
 ]
 
 interface Props {
-  selectedNode: TreeItem | undefined
+  selectedNode: ChildrenItem | undefined
   address: string
   app: string
   iceId: string
   refresh: () => void
 }
 
-const FieldItem = ({ item }: { item: FieldItem }) => {
+const FieldItem = ({ item }: { item: IFieldItem }) => {
   return (
     <div className='filed-item'>
       <div className='desc-item' hidden={!item.name}>

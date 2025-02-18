@@ -200,7 +200,7 @@ const MindMapComponent = ({
       second: {
         shape: 'rectangle',
         marginX: 20,
-        marginY: 0,
+        marginY: 15,
         fillColor: '#fff',
         fontFamily: '微软雅黑, Microsoft YaHei',
         color: '#333',
@@ -216,7 +216,7 @@ const MindMapComponent = ({
       node: {
         shape: 'rectangle',
         marginX: 20,
-        marginY: 0,
+        marginY: 15,
         fillColor: '#fff',
         fontFamily: '微软雅黑, Microsoft YaHei',
         color: '#333',
@@ -242,7 +242,7 @@ const MindMapComponent = ({
       mouseSelectionShow: true,
       allowDragNode: address === 'server',  // 只有 server 才能拖动节点
       allowDragExtension: address === 'server',  // 只有 server 才能拖动扩展
-      beforeDragEnd: ({ overlapNodeUid }) => {
+      beforeDragEnd: ({ overlapNodeUid }: { overlapNodeUid: string }) => {
         // 如果不是 server，禁止拖动
         if (address !== 'server') return true;
         

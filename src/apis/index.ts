@@ -39,6 +39,12 @@ interface HistoryItem {
   createAt: string
 }
 
+interface ClassItem {
+  count: number
+  fullName: string
+  name: string
+}
+
 // 创建API请求函数
 const apis = {
   // App相关
@@ -58,8 +64,8 @@ const apis = {
   editConf: (data: any) =>
     request.post<ApiResponse>(`${API_PREFIX}/conf/edit`, data),
   
-  getClass: (params?: any) =>
-    request.get<ApiResponse>(`${API_PREFIX}/conf/leaf/class`, params),
+  getClass: (params: { app: string | number, type: number }) =>
+    request.get<ClassItem[]>(`${API_PREFIX}/conf/leaf/class`, params),
   
   // 备份相关
   pushConf: (params: { iceId: string | number, app: string | number, reason?: string }) =>

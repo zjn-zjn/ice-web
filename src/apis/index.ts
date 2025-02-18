@@ -78,8 +78,8 @@ const apis = {
   iceEdit: (data: any) =>
     request.post<ApiResponse>(`${API_PREFIX}/base/edit`, data),
   
-  iceExport: (params: { id: string | number }) =>
-    request.get<ApiResponse>(`${API_PREFIX}/base/export`, params),
+  iceExport: (params: { iceId: string | number, app: string | number }) =>
+    request.get<string>(`${API_PREFIX}/base/export`, params),
   
   iceImport: (data: any) =>
     request.post<ApiResponse>(`${API_PREFIX}/base/import`, data),

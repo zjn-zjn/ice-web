@@ -13,8 +13,8 @@ interface Props {
 }
 
 const ExportModal = ({ open, iceId, onCancel, onOk, app }: Props) => {
-  const { data, run } = useRequest<any, any[]>(
-    (iceId: number | string) => apis.iceExport({ iceId, app }),
+  const { data, run } = useRequest(
+    () => apis.iceExport({ iceId, app }),
     {
       manual: true
     }
@@ -22,9 +22,9 @@ const ExportModal = ({ open, iceId, onCancel, onOk, app }: Props) => {
 
   useEffect(() => {
     if (open) {
-      run(iceId)
+      run()
     }
-  }, [iceId, open])
+  }, [iceId, open, run])
 
   const onCopy = () => {
     if (data) {

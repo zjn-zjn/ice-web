@@ -34,7 +34,7 @@ interface ConfigListResponse {
 const apis = {
   // App相关
   appList: () => 
-    request.get<ApiResponse<{ list: AppItem[] }>>(`${API_PREFIX}/app/list`),
+    request.get<{ list: AppItem[] }>(`${API_PREFIX}/app/list`),
   
   appEdit: (data: Partial<AppItem>) =>
     request.post<ApiResponse>(`${API_PREFIX}/app/edit`, data),

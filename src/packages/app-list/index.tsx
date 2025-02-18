@@ -1,4 +1,4 @@
-import apis, { ApiResponse } from '../../apis'
+import apis from '../../apis'
 import { useEffect, useState } from 'react'
 import { Button, Modal, Form, Input, message } from 'antd'
 import { FormOutlined, PlusOutlined } from '@ant-design/icons'
@@ -31,22 +31,16 @@ const AppList = () => {
     id: 0
   })
 
-  const { data: response, run: getList } = useRequest(
-    () => apis.appList(),
-    {}
-  )
+  const { data, run: getList } = useRequest(apis.appList)
 
-  const { run: handleEdit, loading } = useRequest(
-    (params: Partial<AppItem>) => apis.appEdit(params),
-    {
-      manual: true,
-      onSuccess: () => {
-        getList()
-        closeModal()
-        message.success('操作成功')
-      }
+  const { run: handleEdit, loading } = useRequest(apis.appEdit, {
+    manual: true,
+    onSuccess: () => {
+      getList()
+      closeModal()
+      message.success('操作成功')
     }
-  )
+  })
 
   useEffect(() => {
     if (editModel.open) {
@@ -85,7 +79,7 @@ const AppList = () => {
     navigate(`/config/list?app=${id}`)
   }
 
-  const list = response?.list || []
+  const list = data?.list || []
 
   return (
     <div>

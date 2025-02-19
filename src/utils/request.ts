@@ -2,8 +2,15 @@ import axios, { AxiosRequestConfig, AxiosResponse, AxiosError, InternalAxiosRequ
 import qs from 'qs'
 import { message } from 'antd'
 
-// 从环境变量获取 baseURL
-const baseURL = import.meta.env.VITE_API_BASE_URL || ''
+// 从环境变量获取 baseURL，只在开发环境中使用
+const baseURL = import.meta.env.DEV ? (import.meta.env.VITE_API_BASE_URL || '') : ''
+
+// 创建 axios 实例
+const instance = axios.create({
+  baseURL,
+  timeout: 10000,
+  withCredentials: false,
+})
 
 interface ApiResponse<T = any> {
   ret: number
@@ -14,12 +21,6 @@ interface ApiResponse<T = any> {
 interface RequestConfig extends InternalAxiosRequestConfig {
   hideErrorMessage?: boolean
 }
-
-const instance = axios.create({
-  baseURL,
-  timeout: 10000,
-  withCredentials: true,
-})
 
 // 请求拦截器
 instance.interceptors.request.use(

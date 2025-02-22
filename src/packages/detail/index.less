@@ -15,7 +15,7 @@
 }
 
 .tree-wrap {
-  width: 70%;
+  flex: 1;
   border-right: 1px solid rgba(0, 0, 0, 0.15);
   height: 100%;
   overflow: scroll;
@@ -23,12 +23,46 @@
 }
 
 .edit-wrap {
-  width: 40%;
+  width: 35%;
   height: 100%;
-  overflow: scroll;
-  padding: 10px;
+  overflow: hidden;
+  padding: 10px 10px 10px 26px;
   display: flex;
   flex-direction: column;
+  position: relative;
+  transition: all 0.3s ease;
+
+  &.collapsed {
+    width: 16px !important;
+    padding: 0;
+    overflow: visible;
+  }
+
+  .edit-collapse-btn {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 16px;
+    height: 40px;
+    background: #001529;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border-radius: 0 4px 4px 0;
+    z-index: 1;
+    transition: all 0.3s ease;
+
+    &:hover {
+      background: #1677ff;
+    }
+  }
+
+  &.collapsed .edit-collapse-btn {
+    left: -16px;
+  }
 }
 
 .form-wrap {

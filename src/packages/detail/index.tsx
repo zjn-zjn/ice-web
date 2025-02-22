@@ -4,7 +4,7 @@ import type { TreeItem } from './types'
 import type { DetailData, ChildrenItem } from '../../index.d'
 import MindMapComponent from './components/mind-map'
 import Edit from './components/edit'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState, useEffect } from 'react'
 import { Button, Select, Space, Modal, message } from 'antd'
 import ImportModal from '../config-list/components/import-modal'
 import ExportModal from '../config-list/components/export-modal'
@@ -20,6 +20,7 @@ const Detail = () => {
   const [address, setAddress] = useState('server')
   const [importVisible, setImportVisible] = useState(false)
   const [exportVisible, setExportVisible] = useState(false)
+  const [editCollapsed, setEditCollapsed] = useState(false)
 
   const { data, run } = useRequest<DetailData, any>(
     () => apis.details({ app, iceId, address} as any),
@@ -131,14 +132,19 @@ const Detail = () => {
         iceId={iceId}
         address={address}
       />
-      <div className='edit-wrap'>
-        <Edit
-          app={app}
-          iceId={iceId}
-          address={address}
-          refresh={run}
-          selectedNode={selectedNode}
-        />
+      <div className={`edit-wrap ${editCollapsed ? 'collapsed' : ''}`}>
+        <div className="edit-collapse-btn" onClick={() => setEditCollapsed(!editCollapsed)}>
+          {editCollapsed ? '<' : '>'}
+        </div>
+        {!editCollapsed && (
+          <Edit
+            app={app}
+            iceId={iceId}
+            address={address}
+            refresh={run}
+            selectedNode={selectedNode}
+          />
+        )}
       </div>
       <ImportModal
         open={importVisible}

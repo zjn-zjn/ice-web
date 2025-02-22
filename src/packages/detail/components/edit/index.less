@@ -1,5 +1,5 @@
 .edit-wrap {
-  width: 40%;
+  width: 35%;
   height: 100%;
   overflow: auto;
   padding: 16px;
@@ -19,38 +19,46 @@
     }
     
     .ant-form-item {
-      margin-bottom: 12px;
-      
-      .ant-form-item-label > label {
-        height: 32px;
+      margin-bottom: 16px;
+
+      .ellipsis-text {
+        display: inline-block;
+        max-width: 100%;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
       }
     }
   }
 }
 
 .filed-item {
-  width: 100%;
-  height: auto;
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  margin-bottom: 10px;
-  padding: 12px 0;
-}
+  padding: 8px;
+  border: 1px solid #f0f0f0;
+  border-radius: 4px;
+  margin-bottom: 8px;
 
-.desc-item {
-  text-align: left;
-  width: 50%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  padding-right: 10px;
+  .desc-item {
+    margin-bottom: 4px;
+    line-height: 1.5;
+    display: flex;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    .ellipsis-text {
+      flex: 1;
+      margin-left: 4px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
 }
 
 .btn-wrap {
   display: flex;
-  align-items: center;
   justify-content: flex-end;
   gap: 8px;
   margin-top: 16px;

@@ -38,15 +38,29 @@ const FieldItem = ({ item }: { item: IFieldItem }) => {
   return (
     <div className='filed-item'>
       <div className='desc-item' hidden={!item.name}>
-        名称：{item.name}
+        名称：
+        <Tooltip title={item.name}>
+          <span className="ellipsis-text">{item.name}</span>
+        </Tooltip>
       </div>
       <div className='desc-item' hidden={!item.desc}>
-        描述：{item.desc}
+        描述：
+        <Tooltip title={item.desc}>
+          <span className="ellipsis-text">{item.desc}</span>
+        </Tooltip>
       </div>
-      <div className='desc-item'>字段：{item.field}</div>
       <div className='desc-item'>
+        字段：
+        <Tooltip title={item.field}>
+          <span className="ellipsis-text">{item.field}</span>
+        </Tooltip>
+      </div>
+      <div className='desc-item'>
+        类型：
         <Tooltip title={item.type}>
-          类型：{item.type.substring(item.type.lastIndexOf('.') + 1)}
+          <span className="ellipsis-text">
+            {item.type.substring(item.type.lastIndexOf('.') + 1)}
+          </span>
         </Tooltip>
       </div>
       <Space>
@@ -58,7 +72,7 @@ const FieldItem = ({ item }: { item: IFieldItem }) => {
           valuePropName='checked'
           initialValue={item.valueNull}
         >
-        <Checkbox>null</Checkbox>
+          <Checkbox>null</Checkbox>
         </Form.Item>
       </Space>
     </div>
@@ -168,22 +182,30 @@ const Edit = ({ selectedNode, address, app, iceId, refresh }: Props) => {
         label='节点名称'
         hidden={(selectedNode?.showConf?.nodeInfo?.name || '') == ''}
       >
-        {selectedNode?.showConf?.nodeInfo?.name}
+        <Tooltip title={selectedNode?.showConf?.nodeInfo?.name}>
+          <span className="ellipsis-text">{selectedNode?.showConf?.nodeInfo?.name}</span>
+        </Tooltip>
       </Form.Item>
       <Form.Item
         label='节点描述'
         hidden={(selectedNode?.showConf?.nodeInfo?.desc || '') == ''}
       >
-        {selectedNode?.showConf?.nodeInfo?.desc}
+        <Tooltip title={selectedNode?.showConf?.nodeInfo?.desc}>
+          <span className="ellipsis-text">{selectedNode?.showConf?.nodeInfo?.desc}</span>
+        </Tooltip>
       </Form.Item>
       <Form.Item
         label='节点类'
         hidden={![5, 6, 7].includes(selectedNode?.showConf?.nodeType || 0)}
       >
-        {selectedNode?.showConf?.confName}
+        <Tooltip title={selectedNode?.showConf?.confName}>
+          <span className="ellipsis-text">{selectedNode?.showConf?.confName}</span>
+        </Tooltip>
       </Form.Item>
       <Form.Item label='节点ID'>
-        {selectedNode?.showConf?.nodeId}
+        <Tooltip title={selectedNode?.showConf?.nodeId}>
+          <span className="ellipsis-text">{selectedNode?.showConf?.nodeId}</span>
+        </Tooltip>
       </Form.Item>
       <Form.Item label='生效时间' name='timeType' required>
         <Select options={TimeTypeOptions} />

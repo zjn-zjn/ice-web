@@ -232,20 +232,21 @@ const MindMapComponent = ({
 
     MindMap.usePlugin(Drag);
 
+    // 初始化思维导图
     mindMapRef.current = new MindMap({
       el: containerRef.current,
       data: mindMapData,
       layout: 'logicalStructure',
       direction: 2,
+      view: {
+        zoom: 0.8
+      },
       draggable: address === 'server',  // 只有 server 才能拖动
       mousewheelZoom: true,
       mouseSelectionShow: true,
       readonly: address !== 'server', // 只有 server 才能编辑
       beforeTextEdit: () => {
         return false; // 阻止编辑
-      },
-      beforeHandleKeydown: () => {
-        return false; // 阻止快捷键
       },
       beforeDragEnd: ({ overlapNodeUid }: { overlapNodeUid: string }) => {
         // 如果不是 server，禁止拖动
@@ -273,8 +274,32 @@ const MindMapComponent = ({
         mindMapRef.current.view.translateXTo(-400);
         mindMapRef.current.view.translateYTo(-50);
         
-        // 只禁用命令（快捷键）
-        mindMapRef.current.command.setEnable(false);
+        // 移除所有节点操作相关的快捷键
+        const nodeOperationShortcuts = [
+          'Tab',                // 插入下级节点
+          'Enter',              // 插入同级节点
+          'Shift+Tab',          // 插入父节点
+          'Control+↑',          // 上移节点
+          'Control+↓',          // 下移节点
+          'Control+G',          // 插入概要
+          '/',                  // 展开/收起节点
+          'Delete',             // 删除节点
+          'Backspace',          // 删除节点
+          'Shift+Backspace',    // 仅删除当前节点
+          'Control+C',          // 复制节点
+          'Control+X',          // 剪切节点
+          'Control+V',          // 粘贴节点
+          'F2',                 // 编辑节点
+          'Shift+Enter',        // 文本换行
+          'Control+Z',          // 回退
+          'Control+Y',          // 前进
+          'Control+A',          // 全选
+          'Control+L'           // 一键整理布局
+        ];
+        
+        nodeOperationShortcuts.forEach(shortcut => {
+          mindMapRef.current.keyCommand.removeShortcut(shortcut);
+        });
       }
     });
 

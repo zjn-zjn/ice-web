@@ -240,8 +240,13 @@ const MindMapComponent = ({
       draggable: address === 'server',  // 只有 server 才能拖动
       mousewheelZoom: true,
       mouseSelectionShow: true,
-      allowDragNode: address === 'server',  // 只有 server 才能拖动节点
-      allowDragExtension: address === 'server',  // 只有 server 才能拖动扩展
+      readonly: address !== 'server', // 只有 server 才能编辑
+      beforeTextEdit: () => {
+        return false; // 阻止编辑
+      },
+      beforeHandleKeydown: () => {
+        return false; // 阻止快捷键
+      },
       beforeDragEnd: ({ overlapNodeUid }: { overlapNodeUid: string }) => {
         // 如果不是 server，禁止拖动
         if (address !== 'server') return true;
@@ -267,6 +272,9 @@ const MindMapComponent = ({
         // 移动到最左边
         mindMapRef.current.view.translateXTo(-400);
         mindMapRef.current.view.translateYTo(-50);
+        
+        // 只禁用命令（快捷键）
+        mindMapRef.current.command.setEnable(false);
       }
     });
 

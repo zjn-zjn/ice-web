@@ -2,7 +2,6 @@ import { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Spin } from 'antd'
 
-const Home = lazy(() => import('../packages/home'))
 const AppList = lazy(() => import('../packages/app-list'))
 const ConfigList = lazy(() => import('../packages/config-list'))
 const Detail = lazy(() => import('../packages/detail'))
@@ -18,11 +17,10 @@ const AppRouter = () => {
   return (
     <Suspense fallback={<LazyLoading />}>
       <Routes>
-        <Route path="/" element={<Home />} />
-        <Route path="/config" element={<AppList />} />
+        <Route path="/" element={<AppList />} />
         <Route path="/config/list" element={<ConfigList />} />
         <Route path="/config/detail" element={<Detail />} />
-        {/* 未匹配到路由时重定向到首页 */}
+        {/* 未匹配到路由时重定向到APP列表页 */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </Suspense>

@@ -1,6 +1,6 @@
 import { Layout, Menu, Tabs } from 'antd'
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { pathToRegexp } from 'path-to-regexp'
 import logoImg from '../assets/logo.png'
 import './index.less'
@@ -11,33 +11,24 @@ const { Sider, Content } = Layout
 const menuList = [
   {
     key: '/',
-    label: '首页'
-  },
-  {
-    key: '/config',
-    label: '配置'
+    label: '应用列表'
   }
 ]
 
 const allTabList = [
   {
     key: '/',
-    label: '首页',
-    closable: false
-  },
-  {
-    key: '/config',
-    label: '配置',
+    label: '应用列表',
     closable: true
   },
   {
     key: '/config/list',
-    label: '列表',
+    label: '配置列表',
     closable: true
   },
   {
     key: '/config/detail',
-    label: '详情',
+    label: '配置详情',
     closable: true
   }
 ]
@@ -79,6 +70,18 @@ const Common = ({ children }: CommonProps) => {
         search: location.search
       }))
   )
+
+  const [collapsed, setCollapsed] = useState(false);
+
+  // 计算菜单最长文字长度并设置合适的宽度
+  const siderWidth = useMemo(() => {
+    const maxLength = Math.max(
+      ...menuList.map(item => item.label.length),
+      ...allTabList.map(item => item.label.length)
+    );
+    // 每个中文字符大约20px，加上padding和图标的空间
+    return maxLength * 20 + 60;
+  }, [menuList, allTabList]);
 
   useEffect(() => {
     const currentPath = location.pathname
@@ -142,11 +145,22 @@ const Common = ({ children }: CommonProps) => {
 
   return (
     <Layout className="common-container">
-      <Sider className="common-sider">
-        <div className="logo">
+      <Sider 
+        className="common-sider" 
+        collapsible 
+        collapsed={collapsed}
+        onCollapse={(value) => setCollapsed(value)}
+        width={siderWidth}
+      >
+        <a
+          href="http://waitmoon.com"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="logo"
+        >
           <img src={logoImg} alt="logo" />
-          <span>ICE配置后台</span>
-        </div>
+          {!collapsed && <span>ICE</span>}
+        </a>
         <Menu
           theme="dark"
           mode="inline"

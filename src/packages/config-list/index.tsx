@@ -134,7 +134,7 @@ const ConfigList = () => {
             size="small"
             onClick={() => navigate(`/config/detail?app=${app}&iceId=${record.id}`)}
           >
-            查看详情
+            配置详情
           </Button>
           <Button
             type="link"

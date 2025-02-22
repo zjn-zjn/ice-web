@@ -63,18 +63,21 @@ const FieldItem = ({ item }: { item: IFieldItem }) => {
           </span>
         </Tooltip>
       </div>
-      <Space>
-        <Form.Item label='值' name={['fields', item.field, 'value']}>
-          <TextArea />
+      <div style={{ width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <Form.Item label='值' name={['fields', item.field, 'value']} style={{ flex: 1, margin: 0, marginRight: 16 }}>
+          <TextArea
+            autoSize={{ minRows: 1, maxRows: 5 }}
+          />
         </Form.Item>
         <Form.Item
           name={['fields', item.field, 'isNull']}
           valuePropName='checked'
           initialValue={item.valueNull}
+          style={{ margin: 0, minWidth: 'fit-content' }}
         >
           <Checkbox>null</Checkbox>
         </Form.Item>
-      </Space>
+      </div>
     </div>
   )
 }

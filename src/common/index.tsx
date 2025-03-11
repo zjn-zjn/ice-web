@@ -151,6 +151,7 @@ const Common = ({ children }: CommonProps) => {
         collapsed={collapsed}
         onCollapse={(value) => setCollapsed(value)}
         width={siderWidth}
+        style={{ overflow: 'auto', height: '100vh', position: 'fixed', left: 0, top: 0, bottom: 0 }}
       >
         <a
           href="http://waitmoon.com"
@@ -169,7 +170,7 @@ const Common = ({ children }: CommonProps) => {
           items={menuList}
         />
       </Sider>
-      <Layout>
+      <Layout style={{ marginLeft: collapsed ? 80 : siderWidth }}>
         <Tabs
           className="common-tabs"
           activeKey={activeTab.key}

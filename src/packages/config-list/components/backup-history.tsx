@@ -44,7 +44,7 @@ const BackupHistory = ({
   )
 
   const { run: rollbackRun } = useRequest(
-    (pushId: number) => apis.rollback({ pushId }),
+    (pushId: number) => apis.rollback({ app, pushId }),
     {
       manual: true,
       onSuccess: () => {
@@ -59,7 +59,7 @@ const BackupHistory = ({
   )
 
   const { run: deleteRun } = useRequest(
-    (pushId: number) => apis.deleteHistory({ pushId }),
+    (pushId: number) => apis.deleteHistory({ app, pushId }),
     {
       manual: true,
       onSuccess: () => {

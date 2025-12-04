@@ -7,14 +7,15 @@ import { useEffect } from 'react'
 interface Props {
   open: boolean
   iceId: number | string
+  pushId?: number
   onCancel: () => void
   onOk: () => void
   app: string
 }
 
-const ExportModal = ({ open, iceId, onCancel, onOk, app }: Props) => {
+const ExportModal = ({ open, iceId, pushId, onCancel, onOk, app }: Props) => {
   const { data, run } = useRequest(
-    () => apis.iceExport({ iceId, app }),
+    () => apis.iceExport({ iceId, app, pushId }),
     {
       manual: true
     }
@@ -24,7 +25,7 @@ const ExportModal = ({ open, iceId, onCancel, onOk, app }: Props) => {
     if (open) {
       run()
     }
-  }, [iceId, open, run])
+  }, [iceId, pushId, open, run])
 
   const onCopy = () => {
     if (data) {

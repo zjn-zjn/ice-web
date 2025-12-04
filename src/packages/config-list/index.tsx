@@ -271,6 +271,7 @@ const ConfigList = () => {
       <ExportModal
         open={exportObj.visible}
         iceId={exportObj.iceId}
+        pushId={exportObj.pushId}
         onCancel={() => setExportObj({ visible: false, iceId: '' })}
         onOk={() => setExportObj({ visible: false, iceId: '' })}
         app={app}

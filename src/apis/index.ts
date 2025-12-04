@@ -74,17 +74,17 @@ const apis = {
   pushHistory: (params: { app: string | number, iceId: string | number }) =>
     request.get<{ list: HistoryItem[] }>(`${API_PREFIX}/base/backup/history`, params),
   
-  rollback: (params: { pushId: number }) =>
+  rollback: (params: { app: string | number, pushId: number }) =>
     request.get(`${API_PREFIX}/base/rollback`, params),
   
-  deleteHistory: (params: { pushId: number }) =>
+  deleteHistory: (params: { app: string | number, pushId: number }) =>
     request.get(`${API_PREFIX}/base/backup/delete`, params),
   
   // ICE相关
   iceEdit: (data: any) =>
     request.post<ApiResponse>(`${API_PREFIX}/base/edit`, data),
   
-  iceExport: (params: { iceId: string | number, app: string | number }) =>
+  iceExport: (params: { iceId: string | number, app: string | number, pushId?: number }) =>
     request.get<string>(`${API_PREFIX}/base/export`, params),
   
   iceImport: (data: any) =>

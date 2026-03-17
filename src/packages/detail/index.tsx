@@ -8,25 +8,31 @@ import { useCallback, useMemo, useState, useEffect } from 'react'
 import { Button, Select, Space, Modal, message } from 'antd'
 import ImportModal from '../config-list/components/import-modal'
 import ExportModal from '../config-list/components/export-modal'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import './index.less'
+
+const LANE_TRUNK = '__trunk__'
 
 const Detail = () => {
   const location = useLocation()
+  const navigate = useNavigate()
   const searchParams = new URLSearchParams(location.search)
   const iceId = searchParams.get('iceId') || ''
   const app = searchParams.get('app') || ''
+  const urlLane = searchParams.get('lane')
   const [selectedNode, setSelectedNode] = useState<TreeItem>()
   const [address, setAddress] = useState('server')
   const [importVisible, setImportVisible] = useState(false)
   const [exportVisible, setExportVisible] = useState(false)
   const [editCollapsed, setEditCollapsed] = useState(false)
-  const [selectedLane, setSelectedLane] = useState<string | undefined>(undefined)
+  const [selectedLane, setSelectedLane] = useState<string>(urlLane || LANE_TRUNK)
+
+  const activeLane = selectedLane === LANE_TRUNK ? undefined : selectedLane
 
   const { data, run } = useRequest<DetailData, any>(
-    () => apis.details({ app, iceId, address} as any),
+    () => apis.details({ app, iceId, address, ...(activeLane ? { lane: activeLane } : {}) } as any),
     {
-      refreshDeps: [app, iceId, address]
+      refreshDeps: [app, iceId, address, selectedLane]
     }
   )
 
@@ -34,6 +40,17 @@ const Detail = () => {
     () => apis.getLanes({ app }),
     { refreshDeps: [app] }
   )
+
+  const onLaneChange = (value: string) => {
+    setSelectedLane(value)
+    const params = new URLSearchParams(location.search)
+    if (value === LANE_TRUNK) {
+      params.delete('lane')
+    } else {
+      params.set('lane', value)
+    }
+    navigate(`${location.pathname}?${params.toString()}`, { replace: true })
+  }
 
   const getTreeList = useCallback(
     (list: ChildrenItem[]): TreeItem[] =>
@@ -125,12 +142,13 @@ const Detail = () => {
           />
           {lanes && lanes.length > 0 && (
             <Select
-              allowClear
-              placeholder="泳道: 主干"
               value={selectedLane}
-              onChange={setSelectedLane}
+              onChange={onLaneChange}
               style={{ width: 160 }}
-              options={lanes.map((l) => ({ label: `泳道: ${l}`, value: l }))}
+              options={[
+                { label: '主干', value: LANE_TRUNK },
+                ...lanes.map((l) => ({ label: `泳道: ${l}`, value: l }))
+              ]}
             />
           )}
           <Button onClick={openImportModal}>导入</Button>
@@ -147,7 +165,7 @@ const Detail = () => {
         app={app}
         iceId={iceId}
         address={address}
-        lane={selectedLane}
+        lane={activeLane}
       />
       <div className={`edit-wrap ${editCollapsed ? 'collapsed' : ''}`}>
         <div className="edit-collapse-btn" onClick={() => setEditCollapsed(!editCollapsed)}>

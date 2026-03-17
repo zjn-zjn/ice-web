@@ -58,7 +58,7 @@ const apis = {
   confList: (params?: any) =>
     request.get<ConfigListResponse>(`${API_PREFIX}/base/list`, params),
   
-  details: (params: { app: number, iceId: number, address?: string }) =>
+  details: (params: { app: number, iceId: number, address?: string, lane?: string }) =>
     request.get<DetailData>(`${API_PREFIX}/conf/detail`, params),
   
   editConf: (data: any) =>

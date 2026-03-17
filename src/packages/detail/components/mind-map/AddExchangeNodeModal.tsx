@@ -26,6 +26,7 @@ interface Props {
   app: string
   iceId: string
   address: string
+  lane?: string
   selectedNode: TreeItem | undefined
   refresh: () => void
 }
@@ -37,19 +38,22 @@ const AddExchangeNodeModal = ({
   app,
   iceId,
   selectedNode,
+  lane,
   refresh
 }: Props) => {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
+
   const { data: classList, run: getClass } = useRequest<ClassItem[], any[]>(
     (type: number) =>
       apis.getClass({
         app,
-        type
+        type,
+        ...(lane ? { lane } : {})
       }),
     {
       manual: true,
-      refreshDeps: [app]
+      refreshDeps: [app, lane]
     }
   )
 
@@ -162,6 +166,7 @@ const AddExchangeNodeModal = ({
                           <Select.Option 
                             key={item.fullName} 
                             value={item.fullName}
+                            label={`${item.fullName} ${item.name || ''}`}
                             title={item.fullName}
                           >
                             {item.fullName.substring(item.fullName.lastIndexOf('.') + 1)}

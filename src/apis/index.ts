@@ -64,8 +64,11 @@ const apis = {
   editConf: (data: any) =>
     request.post<ApiResponse>(`${API_PREFIX}/conf/edit`, data),
   
-  getClass: (params: { app: string | number, type: number }) =>
+  getClass: (params: { app: string | number, type: number, lane?: string }) =>
     request.get<ClassItem[]>(`${API_PREFIX}/conf/leaf/class`, params),
+  
+  getLanes: (params: { app: string | number }) =>
+    request.get<string[]>(`${API_PREFIX}/conf/lane/list`, params),
   
   // 备份相关
   pushConf: (params: { iceId: string | number, app: string | number, reason?: string }) =>

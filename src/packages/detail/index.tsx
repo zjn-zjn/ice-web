@@ -21,12 +21,18 @@ const Detail = () => {
   const [importVisible, setImportVisible] = useState(false)
   const [exportVisible, setExportVisible] = useState(false)
   const [editCollapsed, setEditCollapsed] = useState(false)
+  const [selectedLane, setSelectedLane] = useState<string | undefined>(undefined)
 
   const { data, run } = useRequest<DetailData, any>(
     () => apis.details({ app, iceId, address} as any),
     {
       refreshDeps: [app, iceId, address]
     }
+  )
+
+  const { data: lanes } = useRequest<string[], any[]>(
+    () => apis.getLanes({ app }),
+    { refreshDeps: [app] }
   )
 
   const getTreeList = useCallback(
@@ -117,6 +123,16 @@ const Detail = () => {
             style={{ width: 200 }}
             options={selectOptions}
           />
+          {lanes && lanes.length > 0 && (
+            <Select
+              allowClear
+              placeholder="泳道: 主干"
+              value={selectedLane}
+              onChange={setSelectedLane}
+              style={{ width: 160 }}
+              options={lanes.map((l) => ({ label: `泳道: ${l}`, value: l }))}
+            />
+          )}
           <Button onClick={openImportModal}>导入</Button>
           <Button onClick={openExportModal}>导出</Button>
           <Button onClick={release}>发布</Button>
@@ -131,6 +147,7 @@ const Detail = () => {
         app={app}
         iceId={iceId}
         address={address}
+        lane={selectedLane}
       />
       <div className={`edit-wrap ${editCollapsed ? 'collapsed' : ''}`}>
         <div className="edit-collapse-btn" onClick={() => setEditCollapsed(!editCollapsed)}>

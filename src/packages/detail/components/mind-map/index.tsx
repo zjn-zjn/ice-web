@@ -22,6 +22,7 @@ interface Props {
   app: string;
   iceId: string;
   address: string;
+  lane?: string;
   onNodeSelect?: (node: TreeItem) => void;
 }
 
@@ -119,7 +120,8 @@ const MindMapComponent = ({
   selectedNode,
   app,
   iceId,
-  address
+  address,
+  lane
 }: Props) => {
   const mindMapRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -601,6 +603,7 @@ const MindMapComponent = ({
         app={app}
         iceId={iceId}
         address={address}
+        lane={lane}
         closeModal={() => {
           setAddExchangeNodeModalObj((pre) => ({ ...pre, visible: false }));
         }}

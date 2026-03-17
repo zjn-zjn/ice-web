@@ -11,8 +11,6 @@ import ExportModal from '../config-list/components/export-modal'
 import { useLocation, useNavigate } from 'react-router-dom'
 import './index.less'
 
-const LANE_TRUNK = '__trunk__'
-
 const Detail = () => {
   const location = useLocation()
   const navigate = useNavigate()
@@ -20,17 +18,35 @@ const Detail = () => {
   const iceId = searchParams.get('iceId') || ''
   const app = searchParams.get('app') || ''
   const urlLane = searchParams.get('lane')
+
+  const getInitialLane = () => {
+    if (urlLane) return urlLane
+    if (app) {
+      const saved = sessionStorage.getItem(`ice_lane_${app}`)
+      if (saved) return saved
+    }
+    return undefined
+  }
+
   const [selectedNode, setSelectedNode] = useState<TreeItem>()
   const [address, setAddress] = useState('server')
   const [importVisible, setImportVisible] = useState(false)
   const [exportVisible, setExportVisible] = useState(false)
   const [editCollapsed, setEditCollapsed] = useState(false)
-  const [selectedLane, setSelectedLane] = useState<string>(urlLane || LANE_TRUNK)
+  const [selectedLane, setSelectedLane] = useState<string | undefined>(getInitialLane)
 
-  const activeLane = selectedLane === LANE_TRUNK ? undefined : selectedLane
+  useEffect(() => {
+    const lane = getInitialLane()
+    setSelectedLane(lane)
+    if (lane && !urlLane) {
+      const params = new URLSearchParams(location.search)
+      params.set('lane', lane)
+      navigate(`${location.pathname}?${params.toString()}`, { replace: true })
+    }
+  }, [iceId])
 
   const { data, run } = useRequest<DetailData, any>(
-    () => apis.details({ app, iceId, address, ...(activeLane ? { lane: activeLane } : {}) } as any),
+    () => apis.details({ app, iceId, address, ...(selectedLane ? { lane: selectedLane } : {}) } as any),
     {
       refreshDeps: [app, iceId, address, selectedLane]
     }
@@ -41,13 +57,15 @@ const Detail = () => {
     { refreshDeps: [app] }
   )
 
-  const onLaneChange = (value: string) => {
+  const onLaneChange = (value: string | undefined) => {
     setSelectedLane(value)
     const params = new URLSearchParams(location.search)
-    if (value === LANE_TRUNK) {
-      params.delete('lane')
-    } else {
+    if (value) {
       params.set('lane', value)
+      sessionStorage.setItem(`ice_lane_${app}`, value)
+    } else {
+      params.delete('lane')
+      sessionStorage.removeItem(`ice_lane_${app}`)
     }
     navigate(`${location.pathname}?${params.toString()}`, { replace: true })
   }
@@ -142,13 +160,12 @@ const Detail = () => {
           />
           {lanes && lanes.length > 0 && (
             <Select
+              allowClear
+              placeholder="泳道: 主干"
               value={selectedLane}
               onChange={onLaneChange}
               style={{ width: 160 }}
-              options={[
-                { label: '主干', value: LANE_TRUNK },
-                ...lanes.map((l) => ({ label: `泳道: ${l}`, value: l }))
-              ]}
+              options={lanes.map((l) => ({ label: l, value: l }))}
             />
           )}
           <Button onClick={openImportModal}>导入</Button>
@@ -165,7 +182,7 @@ const Detail = () => {
         app={app}
         iceId={iceId}
         address={address}
-        lane={activeLane}
+        lane={selectedLane}
       />
       <div className={`edit-wrap ${editCollapsed ? 'collapsed' : ''}`}>
         <div className="edit-collapse-btn" onClick={() => setEditCollapsed(!editCollapsed)}>

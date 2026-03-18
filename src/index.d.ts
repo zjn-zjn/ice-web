@@ -32,7 +32,6 @@ interface ConfigItem {
  */
 interface ClientInfo {
   address: string
-  classes: string[]
 }
 
 export interface ClientRegistryInfo {

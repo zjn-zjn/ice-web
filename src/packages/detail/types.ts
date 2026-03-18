@@ -18,8 +18,3 @@ export const RelationNodeMap = new Map([
   [12, 'P_ANY']
 ])
 
-export const LeafNodeMap = new Map([
-  [5, 'LEAF_FLOW'],
-  [6, 'LEAF_RESULT'],
-  [7, 'LEAF_NONE']
-])

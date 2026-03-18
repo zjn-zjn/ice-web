@@ -1,10 +1,9 @@
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useState } from 'react'
+import React, { useState } from 'react'
 import { Button, Table, Form, Input, Space, message } from 'antd'
 import { SearchOutlined } from '@ant-design/icons'
 import apis from '../../apis'
 import { useRequest } from 'ahooks'
-import type { ApiResponse } from '../../apis'
 import ExportModal from './components/export-modal'
 import EditAddModal from './components/edit-add-modal'
 import DeleteModal from './components/delete-modal'
@@ -19,6 +18,7 @@ interface ModalState {
 
 interface ExportModalState extends ModalState {
   pushId?: number
+  iceIds?: (string | number)[]
 }
 
 interface HistoryModalState extends ModalState {
@@ -65,6 +65,7 @@ const ConfigList = () => {
     visible: false,
     iceId: ''
   })
+  const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([])
   const [editObj, setEditObj] = useState<{
     visible: boolean
     currentItem?: ConfigItem
@@ -213,6 +214,13 @@ const ConfigList = () => {
             新增
           </Button>
           <Button style={{left: '16px', top: '6px' }} onClick={() => setImportVisible(true)}>导入</Button>
+          <Button
+            style={{left: '20px', top: '6px' }}
+            disabled={selectedRowKeys.length === 0}
+            onClick={() => setExportObj({ visible: true, iceId: '', iceIds: selectedRowKeys as number[] })}
+          >
+            批量导出{selectedRowKeys.length > 0 ? ` (${selectedRowKeys.length})` : ''}
+          </Button>
         </Space>
         <Form
           style={{ position: 'relative', top: '12px', left: '12px' }}
@@ -229,7 +237,7 @@ const ConfigList = () => {
           <Form.Item name="name">
             <Input placeholder="请输入名称" allowClear />
           </Form.Item>
-          <Form.Item name="scenes">
+          <Form.Item name="scene">
             <Input placeholder="请输入场景" allowClear />
           </Form.Item>
           <Form.Item>
@@ -245,6 +253,10 @@ const ConfigList = () => {
         dataSource={list}
         rowKey="id"
         loading={loading}
+        rowSelection={{
+          selectedRowKeys,
+          onChange: (keys) => setSelectedRowKeys(keys),
+        }}
         pagination={{
           current: pageId,
           pageSize,
@@ -271,9 +283,13 @@ const ConfigList = () => {
       <ExportModal
         open={exportObj.visible}
         iceId={exportObj.iceId}
+        iceIds={exportObj.iceIds}
         pushId={exportObj.pushId}
         onCancel={() => setExportObj({ visible: false, iceId: '' })}
-        onOk={() => setExportObj({ visible: false, iceId: '' })}
+        onOk={() => {
+          setExportObj({ visible: false, iceId: '' })
+          setSelectedRowKeys([])
+        }}
         app={app}
       />
       <DeleteModal

@@ -87,6 +87,7 @@ const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, refresh, leafC
   const [confName, setConfName] = useState<string | undefined>()
   const [nodeIdInput, setNodeIdInput] = useState('')
   const initialRef = useRef<any>(null)
+  const initialFieldsRef = useRef<any>(null)
 
   const isCreate = mode !== 'edit'
   const origType = isCreate ? undefined : selectedNode?.showConf?.nodeType
@@ -130,7 +131,8 @@ const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, refresh, leafC
         confField: selectedNode.showConf?.confField, fields: fv
       }
       form.setFieldsValue(vals)
-      initialRef.current = JSON.stringify(vals)
+      initialRef.current = JSON.stringify(form.getFieldsValue())
+      initialFieldsRef.current = JSON.parse(JSON.stringify(form.getFieldValue('fields') || {}))
       setHasChanges(false)
       setNodeType(selectedNode.showConf?.nodeType)
       setConfName(selectedNode.showConf?.confName)
@@ -148,6 +150,17 @@ const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, refresh, leafC
     if (isCreate) { setHasChanges(!!activeType); return }
     const changed = JSON.stringify(form.getFieldsValue()) !== initialRef.current || typeChanged || confChanged
     setHasChanges(changed)
+  }
+
+  const handleTypeClick = (type: number) => {
+    setNodeType(type)
+    if (type === origType) {
+      setConfName(origConf)
+      form.setFieldValue('fields', JSON.parse(JSON.stringify(initialFieldsRef.current || {})))
+    } else {
+      setConfName(undefined)
+      form.setFieldValue('fields', {})
+    }
   }
 
   const handleSave = async () => {
@@ -256,7 +269,7 @@ const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, refresh, leafC
             {relationOptions.map(o => (
               <Tag key={o.value} color={activeType === o.value ? 'blue' : undefined}
                 style={{ cursor: 'pointer', padding: '4px 0', fontSize: 13, margin: 0, textAlign: 'center' }}
-                onClick={() => { setNodeType(o.value); setConfName(undefined) }}>
+                onClick={() => handleTypeClick(o.value)}>
                 {o.label}
               </Tag>
             ))}
@@ -265,14 +278,19 @@ const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, refresh, leafC
             {leafTypeOptions.map(o => (
               <Tag key={o.value} color={activeType === o.value ? 'green' : undefined}
                 style={{ cursor: 'pointer', padding: '4px 0', fontSize: 13, margin: 0, textAlign: 'center' }}
-                onClick={() => { setNodeType(o.value); setConfName(undefined) }}>
+                onClick={() => handleTypeClick(o.value)}>
                 {o.label}
               </Tag>
             ))}
           </div>
           {isLeaf && (
             <Select showSearch optionFilterProp="label" value={confName}
-              onChange={(v) => { setConfName(v); form.setFieldValue('fields', {}) }}
+              onChange={(v) => {
+                setConfName(v)
+                form.setFieldValue('fields', v === origConf
+                  ? JSON.parse(JSON.stringify(initialFieldsRef.current || {}))
+                  : {})
+              }}
               placeholder="选择叶子类" style={{ width: '100%' }}>
               {getClasses(leafClassMap, activeType).map(c => (
                 <Select.Option key={c.clazz} value={c.clazz} label={`${c.clazz} ${c.name || ''}`}>

@@ -20,11 +20,11 @@ interface Props {
   onEditNode: (node: TreeItem) => void;
   onAddChild: (node: TreeItem) => void;
   onAddFront: (node: TreeItem) => void;
-  selectedClientClasses: Set<string> | null;
+  registeredClasses: Set<string> | null;
   leafClassMap?: Record<number, LeafClassInfo[]>;
 }
 
-const transformTreeToMindMap = (treeItems: TreeItem[], selectedClientClasses: Set<string> | null): any => {
+const transformTreeToMindMap = (treeItems: TreeItem[], registeredClasses: Set<string> | null): any => {
   if (!treeItems?.length) {
     return {
       data: { id: 'root', text: 'Empty', expanded: true, isroot: true, direction: 2 },
@@ -35,10 +35,10 @@ const transformTreeToMindMap = (treeItems: TreeItem[], selectedClientClasses: Se
   const transformNode = (item: TreeItem, level: number = 0): any => {
     if (!item?.showConf) return null;
 
-    const isUnregistered = selectedClientClasses !== null
+    const isUnregistered = registeredClasses !== null
       && [5, 6, 7].includes(item.showConf?.nodeType)
       && item.showConf?.confName
-      && !selectedClientClasses.has(item.showConf.confName);
+      && !registeredClasses.has(item.showConf.confName);
 
     const node = {
       data: {
@@ -97,7 +97,7 @@ const transformMindMapToTree = (node: any): TreeItem | undefined => {
 
 const MindMapComponent = ({
   treeList, refresh, setSelectedNode, selectedNode, app, iceId, lane,
-  onEditNode, onAddChild, onAddFront, selectedClientClasses, leafClassMap
+  onEditNode, onAddChild, onAddFront, registeredClasses, leafClassMap
 }: Props) => {
   const mindMapRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -141,7 +141,7 @@ const MindMapComponent = ({
       }
     };
 
-    const mindMapData = transformTreeToMindMap(treeList, selectedClientClasses);
+    const mindMapData = transformTreeToMindMap(treeList, registeredClasses);
 
     const customTheme = {
       backgroundColor: '#fafafa',
@@ -272,7 +272,7 @@ const MindMapComponent = ({
         mindMapRef.current.destroy();
       }
     };
-  }, [treeList, selectedClientClasses]);
+  }, [treeList, registeredClasses]);
 
   const isRelation = selectedNode && RelationNodeMap.has(selectedNode.showConf?.nodeType);
   const hasForward = selectedNode?.forward || selectedNode?.forwardId;

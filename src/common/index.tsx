@@ -7,7 +7,6 @@ import './index.less'
 
 const { Sider, Content } = Layout
 
-// 定义路由配置
 const menuList = [
   {
     key: '/',

@@ -6,16 +6,24 @@ import { useEffect } from 'react'
 
 interface Props {
   open: boolean
-  iceId: number | string
+  iceId?: number | string
+  iceIds?: (number | string)[]
   pushId?: number
   onCancel: () => void
   onOk: () => void
   app: string
 }
 
-const ExportModal = ({ open, iceId, pushId, onCancel, onOk, app }: Props) => {
+const ExportModal = ({ open, iceId, iceIds, pushId, onCancel, onOk, app }: Props) => {
+  const isBatch = iceIds && iceIds.length > 0
+
   const { data, run } = useRequest(
-    () => apis.iceExport({ iceId, app, pushId }),
+    () => {
+      if (isBatch) {
+        return apis.iceExportBatch({ iceIds: iceIds!, app })
+      }
+      return apis.iceExport({ iceId: iceId!, app, pushId })
+    },
     {
       manual: true
     }
@@ -25,7 +33,7 @@ const ExportModal = ({ open, iceId, pushId, onCancel, onOk, app }: Props) => {
     if (open) {
       run()
     }
-  }, [iceId, pushId, open, run])
+  }, [iceId, iceIds, pushId, open, run])
 
   const onCopy = () => {
     if (data) {
@@ -46,10 +54,11 @@ const ExportModal = ({ open, iceId, pushId, onCancel, onOk, app }: Props) => {
 
   return (
     <Modal
-      title="导出ICE"
+      title={isBatch ? `批量导出 (${iceIds!.length}项)` : '导出ICE'}
       open={open}
       onCancel={onCancel}
       footer={null}
+      width={isBatch ? 720 : 520}
     >
       <Input.TextArea
         rows={20}

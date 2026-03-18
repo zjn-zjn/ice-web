@@ -4,143 +4,18 @@
   position: relative;
   border: 1px solid #e8e8e8;
   border-radius: 2px;
-  margin: 0px 0;
   overflow: hidden;
   background: #fff;
-
-  .smm-node {
-    &[data-isforward="true"] {
-      .smm-text {
-        color: #ff4d4f;
-      }
-    }
-  }
-
-  .tree-btn {
-    cursor: pointer;
-    margin-left: 8px;
-    &:hover {
-      opacity: 0.8;
-    }
-
-    title {
-      visibility: hidden;
-      pointer-events: none;
-      background-color: rgba(0, 0, 0, 0.75);
-      color: white;
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      position: absolute;
-      transform: translateY(-100%);
-      white-space: nowrap;
-      transition: visibility 0s linear 1s;
-    }
-
-    &:hover title {
-      visibility: visible;
-      transition-delay: 1s;
-    }
-  }
 }
 
-.node-wrapper {
-  display: flex;
-  align-items: center;
-  padding: 4px 8px;
-  gap: 4px;
+.node-toolbar {
+  position: absolute;
   background: #fff;
   border: 1px solid #d9d9d9;
-  border-radius: 3px;
-  position: relative;
-
-  .node-text {
-    font-size: 14px;
-    color: rgba(0, 0, 0, 0.85);
-  }
-
-  .node-buttons {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-left: 8px;
-    z-index: 100;
-
-    .tree-btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 16px;
-      height: 16px;
-      padding: 2px;
-      border-radius: 2px;
-      cursor: pointer;
-      transition: all 0.3s;
-
-      &:hover {
-        background-color: rgba(0, 0, 0, 0.04);
-      }
-
-      svg {
-        width: 14px;
-        height: 14px;
-      }
-    }
-  }
-
-  &:hover {
-    .node-buttons {
-      opacity: 1 !important;
-    }
-  }
-}
-
-.smm-node.active {
-  .node-wrapper {
-    border-color: #1890ff;
-    border-width: 2px;
-  }
-}
-
-.tree-item {
-  display: flex;
-  align-items: center;
-}
-
-.tree-edit-wrap {
-  margin-left: 8px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.forward-item {
-  .smm-text {
-    color: #f50 !important;
-  }
-}
-
-.node-wrapper {
-  display: flex;
-  align-items: center;
-  padding: 4px 8px;
-  border-radius: 2px;
-  background-color: #fff;
-  border: 1px solid #d9d9d9;
-  margin: 4px 0;
-  cursor: pointer;
-
-  &:hover {
-    border-color: #1890ff;
-  }
-
-  .node-content {
-    flex: 1;
-    margin: 0 8px;
-  }
-
-  .node-actions {
-    display: flex;
-    align-items: center;
-  }
+  border-radius: 8px;
+  padding: 4px 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  z-index: 100;
+  white-space: nowrap;
+  pointer-events: auto;
 }

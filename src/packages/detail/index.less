@@ -1,106 +1,48 @@
-@forwarditemcolor: #f50;
-
 .detail-wrap {
   height: 100vh;
   display: flex;
+  flex-direction: column;
   position: relative;
+
+  &.focus-mode {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    background: #fff;
+  }
 }
 
 .operation-wrap {
-  position: absolute;
-  top: 10px;
-  left: 10px;
+  padding: 8px 12px;
   z-index: 2;
-  padding: 0px;
+  background: #fff;
+  border-bottom: 1px solid #f0f0f0;
+  flex-shrink: 0;
+
+  &.focus-bar {
+    background: #fafafa;
+    border-bottom: 1px solid #e8e8e8;
+  }
 }
 
-.tree-wrap {
+.mind-map-area {
   flex: 1;
-  border-right: 1px solid rgba(0, 0, 0, 0.15);
-  height: 100%;
-  overflow: scroll;
-  padding-top: 60px;
-}
-
-.edit-wrap {
-  width: 35%;
-  height: 100%;
-  overflow: hidden;
-  padding: 10px 10px 10px 26px;
-  display: flex;
-  flex-direction: column;
   position: relative;
-  transition: all 0.3s ease;
-
-  &.collapsed {
-    width: 16px !important;
-    padding: 0;
-    overflow: visible;
-  }
-
-  .edit-collapse-btn {
-    position: absolute;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 16px;
-    height: 40px;
-    background: #001529;
-    color: white;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    border-radius: 0 4px 4px 0;
-    z-index: 1;
-    transition: all 0.3s ease;
-
-    &:hover {
-      background: #1677ff;
-    }
-  }
-
-  &.collapsed .edit-collapse-btn {
-    left: -16px;
-  }
+  overflow: hidden;
 }
 
 .form-wrap {
-  flex: 1;
-  overflow: scroll;
   padding-bottom: 15px;
-}
-
-.tree-item {
-  display: flex;
-  align-items: center;
-}
-
-.btn-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 16px;
-}
-
-.tree-edit-wrap {
-  margin-left: 15px;
-}
-
-.forward-item {
-  color: @forwarditemcolor;
 }
 
 .filed-item {
   width: 100%;
-  height: auto;
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
-  margin-bottom: 10px;
-  padding: 12px 0;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  margin-bottom: 8px;
+  padding: 10px 0;
 }
 
 .desc-item {
@@ -110,4 +52,14 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   padding-right: 10px;
+  color: rgba(0, 0, 0, 0.65);
+  font-size: 13px;
+}
+
+.ellipsis-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: inline-block;
+  max-width: 100%;
 }

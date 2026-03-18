@@ -1,4 +1,4 @@
-import { Modal, Form, Input, message } from 'antd'
+import { Modal, Form, Input, InputNumber, message } from 'antd'
 import { useEffect } from 'react'
 import apis from '../../../apis'
 import { useRequest } from 'ahooks'
@@ -15,7 +15,7 @@ const EditAddModal = ({ open, data, onCancel, onOk, app }: Props) => {
   const [form] = Form.useForm()
 
   const { run, loading } = useRequest(
-    (params: object) => apis.iceEdit(params),
+    (params: object, isCreate: boolean) => isCreate ? apis.iceCreate(params) : apis.iceEdit(params),
     {
       manual: true,
       onSuccess: () => {
@@ -42,12 +42,13 @@ const EditAddModal = ({ open, data, onCancel, onOk, app }: Props) => {
 
   const handleOk = () => {
     form.validateFields().then(values => {
-      run({
-        app,
-        ...values,
-        id: data?.id,
-        type: data?.id ? 2 : 1
-      })
+      const isCreate = !data
+      if (isCreate) {
+        const { specifiedId, ...rest } = values
+        run({ app, ...rest, id: specifiedId || undefined }, true)
+      } else {
+        run({ app, ...values, id: data.id }, false)
+      }
     }).catch(err => {
       console.error(err)
     })
@@ -65,6 +66,19 @@ const EditAddModal = ({ open, data, onCancel, onOk, app }: Props) => {
         form={form}
         labelCol={{ span: 6 }}
       >
+        {!data && (
+          <Form.Item
+            name="specifiedId"
+            label="指定ID"
+          >
+            <InputNumber
+              style={{ width: '100%' }}
+              min={1}
+              precision={0}
+              placeholder="留空则自动分配"
+            />
+          </Form.Item>
+        )}
         <Form.Item
           name="name"
           label="名称"

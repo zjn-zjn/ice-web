@@ -30,12 +30,35 @@ interface ConfigItem {
 /**
  * DetailData
  */
+interface ClientInfo {
+  address: string
+  classes: string[]
+}
+
+export interface ClientRegistryInfo {
+  mainClients?: ClientInfo[]
+  laneClients?: Record<string, ClientInfo[]>
+}
+
+export interface LeafClassInfo {
+  clazz: string
+  name: string
+  desc?: string
+  type: number
+  order: number
+  iceFields?: FieldItem[]
+  hideFields?: FieldItem[]
+}
+
 export interface DetailData {
   app: number
   confId: number
   iceId: number
   registerClients: string[]
   root: ChildrenItem
+  updateCount?: number
+  clientRegistry?: ClientRegistryInfo
+  leafClassMap?: Record<number, LeafClassInfo[]>
 }
 
 /**
@@ -76,6 +99,8 @@ interface ShowConf {
   confField?: string
   haveMeta?: boolean
   nodeInfo?: NodeInfo
+  updating?: boolean
+  classRegistered?: boolean
 }
 
 /**

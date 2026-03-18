@@ -103,15 +103,14 @@ const Detail = () => {
     persistSelector(value.map(String))
   }
 
-  const selectedClientClasses = useMemo(() => {
-    if (!address || !meta?.clientRegistry) return null
-    const allClients = [
-      ...(meta.clientRegistry.mainClients || []),
-      ...Object.values(meta.clientRegistry.laneClients || {}).flat()
-    ]
-    const client = allClients.find(c => c.address === address)
-    return client ? new Set(client.classes) : null
-  }, [address, meta?.clientRegistry])
+  const registeredClasses = useMemo(() => {
+    if (!meta?.leafClassMap) return null
+    const classes = new Set<string>()
+    for (const list of Object.values(meta.leafClassMap)) {
+      for (const c of list) classes.add(c.clazz)
+    }
+    return classes
+  }, [meta?.leafClassMap])
 
   const cascaderOptions = useMemo(() => {
     const trunk: any = {
@@ -244,7 +243,7 @@ const Detail = () => {
           onEditNode={(node) => setFormState({ node, mode: 'edit' })}
           onAddChild={(node) => setFormState({ node, mode: 'add-child' })}
           onAddFront={(node) => setFormState({ node, mode: 'add-front' })}
-          selectedClientClasses={selectedClientClasses}
+          registeredClasses={registeredClasses}
           leafClassMap={meta?.leafClassMap}
         />
       </div>

@@ -1,15 +1,21 @@
 import apis from '../../apis'
+import type { EditConfResponse } from '../../apis'
 import { useRequest } from 'ahooks'
 import type { TreeItem } from './types'
 import type { DetailData, ChildrenItem, ClientRegistryInfo, LeafClassInfo } from '../../index.d'
 import MindMapComponent from './components/mind-map'
 import NodeFormModal from './components/edit'
-import { useCallback, useMemo, useState, useEffect } from 'react'
-import { Button, Cascader, Space, Modal, message, Badge, Tooltip } from 'antd'
-import { FullscreenOutlined, FullscreenExitOutlined } from '@ant-design/icons'
+import { useCallback, useMemo, useState, useEffect, useRef } from 'react'
+import { Button, Cascader, Space, Modal, message, Badge } from 'antd'
+import { AimOutlined, ReloadOutlined } from '@ant-design/icons'
 import ImportModal from '../config-list/components/import-modal'
 import ExportModal from '../config-list/components/export-modal'
 import { useLocation, useNavigate, useParams } from 'react-router-dom'
+import {
+  cloneTree, regenerateUniqueKeys, patchAddChild, patchRemoveChild,
+  patchSetForward, patchUpdateProps, patchReplaceChild, patchMoveChild,
+  buildNewNode, walkTree
+} from './utils/tree-patch'
 import './index.less'
 
 interface NodeMeta {
@@ -40,6 +46,16 @@ function useAppAndIceId() {
     app: Number(searchParams.get('app') || 0),
     iceId: Number(searchParams.get('iceId') || 0)
   }
+}
+
+function countUpdatingByNodeId(root: ChildrenItem): number {
+  const seen = new Set<number>()
+  walkTree(root, (node) => {
+    if (node.showConf?.updating && node.showConf.nodeId) {
+      seen.add(node.showConf.nodeId)
+    }
+  })
+  return seen.size
 }
 
 const Detail = () => {
@@ -74,7 +90,8 @@ const Detail = () => {
   const [importVisible, setImportVisible] = useState(false)
   const [exportVisible, setExportVisible] = useState(false)
   const [selectorValue, setSelectorValue] = useState<string[]>(getInitialSelector)
-  const [focusMode, setFocusMode] = useState(false)
+  const [localTree, setLocalTree] = useState<ChildrenItem | null>(null)
+  const mindMapRef = useRef<any>(null)
 
   const lane = selectorValue[0] === TRUNK ? undefined : selectorValue[0]
   const address = selectorValue.length > 1 ? selectorValue[1] : undefined
@@ -109,6 +126,13 @@ const Detail = () => {
       }
     }
   )
+
+  // Sync API response to localTree
+  useEffect(() => {
+    if (treeData?.root) {
+      setLocalTree(cloneTree(treeData.root))
+    }
+  }, [treeData?.root])
 
   const { data: meta } = useRequest<NodeMeta, any>(
     () => apis.nodeMeta({ app, ...(lane ? { lane } : {}), ...(address ? { address } : {}) }),
@@ -198,16 +222,133 @@ const Detail = () => {
   )
 
   const treeList = useMemo(() => {
-    const root = treeData?.root
-    return root ? getTreeList([{ ...root, isRoot: true }]) : []
-  }, [treeData?.root])
+    return localTree ? getTreeList([{ ...localTree, isRoot: true }]) : []
+  }, [localTree])
+
+  // Local update count deduped by nodeId
+  const updateCount = useMemo(() => {
+    if (!localTree) return 0
+    return countUpdatingByNodeId(localTree)
+  }, [localTree])
+
+  const patchTree = useCallback((patcher: (root: ChildrenItem) => void) => {
+    setLocalTree(prev => {
+      if (!prev) return prev
+      const next = cloneTree(prev)
+      patcher(next)
+      regenerateUniqueKeys(next, '', true, false)
+      return next
+    })
+  }, [])
+
+  const handleEditSuccess = useCallback((editType: number, params: any, response: EditConfResponse) => {
+    switch (editType) {
+      case 1: // ADD_SON
+        if (params.multiplexIds && response.nodes?.length) {
+          patchTree(root => {
+            for (const node of response.nodes!) {
+              patchAddChild(root, params.selectId, node)
+            }
+          })
+        } else {
+          patchTree(root => {
+            const newNode = buildNewNode(response.nodeId, params)
+            patchAddChild(root, params.selectId, newNode)
+          })
+        }
+        break
+      case 2: // EDIT
+        patchTree(root => patchUpdateProps(root, params.selectId, params))
+        break
+      case 4: // ADD_FORWARD
+        if (params.multiplexIds && response.nodes?.length) {
+          patchTree(root => patchSetForward(root, params.selectId, response.nodes![0]))
+        } else {
+          patchTree(root => {
+            const newNode = buildNewNode(response.nodeId, params)
+            patchSetForward(root, params.selectId, newNode)
+          })
+        }
+        break
+      case 5: // EXCHANGE
+        if (params.multiplexIds && response.nodes?.length) {
+          if (response.nodes.length > 1) {
+            // Multiple node replacement is complex, fallback to full refresh
+            refreshTree()
+            return
+          }
+          if (params.parentId != null && params.index != null) {
+            patchTree(root => patchReplaceChild(root, params.parentId, params.index, response.nodes![0]))
+          } else if (params.nextId != null) {
+            patchTree(root => patchSetForward(root, params.nextId, response.nodes![0]))
+          }
+        } else {
+          patchTree(root => patchUpdateProps(root, params.selectId, {
+            ...params,
+            nodeType: params.nodeType,
+            confName: params.confName,
+            confField: params.confField,
+          }))
+        }
+        break
+    }
+  }, [patchTree])
+
+  const handleDeleteSuccess = useCallback((params: { selectId: number; parentId?: number; nextId?: number; index?: number }) => {
+    patchTree(root => {
+      if (params.parentId != null && params.index != null) {
+        patchRemoveChild(root, params.parentId, params.index)
+      }
+      if (params.nextId != null) {
+        patchSetForward(root, params.nextId, undefined)
+      }
+    })
+  }, [patchTree])
+
+  const handleMoveSuccess = useCallback((params: any) => {
+    // forward-to-forward move is complex, fallback to full refresh
+    if (params.nextId != null && !params.moveToParentId) {
+      refreshTree()
+      return
+    }
+
+    patchTree(root => {
+      const toParentId = params.moveToParentId ?? params.parentId
+      const toIndex = params.moveTo
+
+      if (params.nextId != null) {
+        // Move from forward to parent's children
+        // Find the forward node data before removing
+        let forwardData: ChildrenItem | undefined
+        walkTree(root, (node) => {
+          if (node.showConf?.nodeId === params.nextId && node.forward?.showConf?.nodeId === params.selectId) {
+            forwardData = cloneTree(node.forward!)
+          }
+        })
+        // Remove forward
+        patchSetForward(root, params.nextId, undefined)
+        // Add to target parent
+        if (forwardData) {
+          patchAddChild(root, toParentId, forwardData)
+        }
+        return
+      }
+
+      const fromParentId = params.parentId
+      const fromIndex = params.index
+      if (fromIndex == null || fromIndex < 0) return
+      patchMoveChild(root, fromParentId, fromIndex, toParentId, toIndex)
+    })
+  }, [patchTree, refreshTree])
 
   const release = () => {
     const updatingNodes: string[] = []
+    const seen = new Set<number>()
     const collectUpdating = (items: TreeItem[]) => {
       for (const item of items) {
-        if (item.showConf?.updating) {
-          updatingNodes.push(`${item.showConf.nodeId} - ${item.showConf.labelName}`)
+        if (item.showConf?.updating && !seen.has(item.showConf.nodeId)) {
+          seen.add(item.showConf.nodeId)
+          updatingNodes.push(item.showConf.labelName)
         }
         if (item.children) collectUpdating(item.children)
       }
@@ -237,10 +378,12 @@ const Detail = () => {
 
   const clean = () => {
     const updatingNodes: string[] = []
+    const seen = new Set<number>()
     const collectUpdating = (items: TreeItem[]) => {
       for (const item of items) {
-        if (item.showConf?.updating) {
-          updatingNodes.push(`${item.showConf.nodeId} - ${item.showConf.labelName}`)
+        if (item.showConf?.updating && !seen.has(item.showConf.nodeId)) {
+          seen.add(item.showConf.nodeId)
+          updatingNodes.push(item.showConf.labelName)
         }
         if (item.children) collectUpdating(item.children)
       }
@@ -269,9 +412,9 @@ const Detail = () => {
   }
 
   return (
-    <div className={`detail-wrap ${focusMode ? 'focus-mode' : ''}`}>
-      <div className={`operation-wrap ${focusMode ? 'focus-bar' : ''}`}>
-        <Space>
+    <div className="detail-wrap">
+      <div className="operation-wrap">
+        <Space size={12}>
           <Cascader
             value={selectorValue}
             options={cascaderOptions}
@@ -284,21 +427,25 @@ const Detail = () => {
           />
           <Button onClick={() => setImportVisible(true)}>导入</Button>
           <Button onClick={() => setExportVisible(true)}>导出</Button>
-          <Badge count={treeData?.updateCount || 0} size="small" offset={[-4, 2]}>
+          <Badge count={updateCount} size="small" offset={[-4, 2]}>
             <Button onClick={release}
-              style={treeData?.updateCount ? { borderColor: '#ff4d4f', color: '#ff4d4f' } : undefined}>发布</Button>
+              style={updateCount ? { borderColor: '#ff4d4f', color: '#ff4d4f' } : undefined}>发布</Button>
           </Badge>
           <Button onClick={clean}>清除</Button>
-          <Tooltip title={focusMode ? "退出专注模式" : "专注模式"}>
-            <Button
-              icon={focusMode ? <FullscreenExitOutlined /> : <FullscreenOutlined />}
-              onClick={() => setFocusMode(!focusMode)}
-            />
-          </Tooltip>
+          <Button
+            icon={<AimOutlined />}
+            onClick={() => mindMapRef.current?.resetView()}
+          />
+          <Button
+            icon={<ReloadOutlined />}
+            onClick={refreshTree}
+            title="刷新"
+          />
         </Space>
       </div>
       <div className="mind-map-area">
         <MindMapComponent
+          ref={mindMapRef}
           treeList={treeList}
           refresh={refreshTree}
           setSelectedNode={setSelectedNode}
@@ -309,6 +456,8 @@ const Detail = () => {
           onEditNode={(node) => setFormState({ node, mode: 'edit' })}
           onAddChild={(node) => setFormState({ node, mode: 'add-child' })}
           onAddFront={(node) => setFormState({ node, mode: 'add-front' })}
+          onDeleteSuccess={handleDeleteSuccess}
+          onMoveSuccess={handleMoveSuccess}
           registeredClasses={registeredClasses}
           leafClassMap={meta?.leafClassMap}
         />
@@ -318,7 +467,8 @@ const Detail = () => {
         onClose={() => setFormState(null)}
         app={app}
         iceId={iceId}
-        refresh={refreshTree}
+        lane={lane}
+        onSuccess={handleEditSuccess}
         selectedNode={formState?.node as any}
         leafClassMap={meta?.leafClassMap}
         mode={formState?.mode}

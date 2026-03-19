@@ -6,15 +6,15 @@ export interface TreeItem extends Omit<ChildrenItem, 'children'> {
 }
 
 export const RelationNodeMap = new Map([
-  [0, 'NONE'],
   [1, 'AND'],
-  [2, 'TRUE'],
-  [3, 'ALL'],
   [4, 'ANY'],
-  [8, 'P_NONE'],
+  [3, 'ALL'],
+  [0, 'NONE'],
+  [2, 'TRUE'],
   [9, 'P_AND'],
-  [10, 'P_TRUE'],
+  [12, 'P_ANY'],
   [11, 'P_ALL'],
-  [12, 'P_ANY']
+  [8, 'P_NONE'],
+  [10, 'P_TRUE']
 ])
 

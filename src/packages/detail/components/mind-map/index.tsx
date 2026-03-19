@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, useCallback } from 'react';
+import { useEffect, useRef, useState, useCallback, forwardRef, useImperativeHandle } from 'react';
 import MindMap from 'simple-mind-map';
 import type { TreeItem } from '../../types';
 import './index.less';
@@ -20,6 +20,8 @@ interface Props {
   onEditNode: (node: TreeItem) => void;
   onAddChild: (node: TreeItem) => void;
   onAddFront: (node: TreeItem) => void;
+  onDeleteSuccess: (params: { selectId: number; parentId?: number; nextId?: number; index?: number }) => void;
+  onMoveSuccess: (params: any) => void;
   registeredClasses: Set<string> | null;
   leafClassMap?: Record<number, LeafClassInfo[]>;
 }
@@ -95,13 +97,74 @@ const transformMindMapToTree = (node: any): TreeItem | undefined => {
   } as TreeItem;
 };
 
-const MindMapComponent = ({
+const customTheme = {
+  backgroundColor: '#fafafa',
+  lineWidth: 1, lineColor: '#959da5',
+  generalizationLineWidth: 1, generalizationLineColor: '#959da5',
+  root: {
+    shape: 'rectangle', marginX: 20, marginY: 0, fillColor: '#86b4da',
+    fontFamily: '微软雅黑, Microsoft YaHei', color: '#000000', fontSize: 14,
+    fontWeight: 400, borderWidth: 2, borderColor: '#c7ccd1', borderStyle: 'solid',
+    borderRadius: 4, padding: [15, 15, 15, 15]
+  },
+  second: {
+    shape: 'rectangle', marginX: 20, marginY: 15, fillColor: '#fff',
+    fontFamily: '微软雅黑, Microsoft YaHei', color: '#333', fontSize: 14,
+    fontWeight: 400, borderWidth: 1, borderColor: '#c7ccd1', borderStyle: 'solid',
+    borderRadius: 4, padding: [10, 10, 10, 10]
+  },
+  node: {
+    shape: 'rectangle', marginX: 20, marginY: 15, fillColor: '#fff',
+    fontFamily: '微软雅黑, Microsoft YaHei', color: '#333', fontSize: 14,
+    fontWeight: 400, borderWidth: 1, borderColor: '#c7ccd1', borderStyle: 'solid',
+    borderRadius: 4, padding: [10, 10, 10, 10]
+  }
+};
+
+MindMap.usePlugin(Drag);
+
+const MindMapComponent = forwardRef(({
   treeList, refresh, setSelectedNode, selectedNode, app, iceId, lane,
-  onEditNode, onAddChild, onAddFront, registeredClasses, leafClassMap
-}: Props) => {
+  onEditNode, onAddChild, onAddFront, onDeleteSuccess, onMoveSuccess,
+  registeredClasses, leafClassMap
+}: Props, ref) => {
   const mindMapRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [toolbarPos, setToolbarPos] = useState<{ x: number; y: number } | null>(null);
+  const initializedRef = useRef(false);
+
+  // Use refs for callbacks to avoid stale closures
+  const refreshRef = useRef(refresh);
+  refreshRef.current = refresh;
+  const onDeleteSuccessRef = useRef(onDeleteSuccess);
+  onDeleteSuccessRef.current = onDeleteSuccess;
+  const onMoveSuccessRef = useRef(onMoveSuccess);
+  onMoveSuccessRef.current = onMoveSuccess;
+  const setSelectedNodeRef = useRef(setSelectedNode);
+  setSelectedNodeRef.current = setSelectedNode;
+  const onEditNodeRef = useRef(onEditNode);
+  onEditNodeRef.current = onEditNode;
+  const appRef = useRef(app);
+  appRef.current = app;
+  const iceIdRef = useRef(iceId);
+  iceIdRef.current = iceId;
+  const laneRef = useRef(lane);
+  laneRef.current = lane;
+
+  useImperativeHandle(ref, () => ({
+    resetView: () => {
+      if (mindMapRef.current?.view) {
+        mindMapRef.current.view.translateXTo(-400);
+        mindMapRef.current.view.translateYTo(-50);
+      }
+    },
+    updateData: (newTreeList: TreeItem[], newRegisteredClasses: Set<string> | null) => {
+      if (mindMapRef.current) {
+        const data = transformTreeToMindMap(newTreeList, newRegisteredClasses);
+        mindMapRef.current.updateData(data);
+      }
+    }
+  }));
 
   const clearSelection = useCallback(() => {
     setSelectedNode(undefined);
@@ -113,23 +176,31 @@ const MindMapComponent = ({
       title: `确认删除<${currentNode.showConf.labelName}>节点吗？`,
       onOk: async () => {
         try {
-          await apis.editConf({
-            app: Number(app), iceId: Number(iceId), editType: 3,
+          const params = {
+            app: Number(appRef.current), iceId: Number(iceIdRef.current), editType: 3,
             selectId: currentNode.showConf.nodeId,
             parentId: currentNode.parentId,
             nextId: currentNode.nextId,
-            index: currentNode.index
+            index: currentNode.index,
+            lane: laneRef.current,
+          };
+          await apis.editConf(params);
+          onDeleteSuccessRef.current({
+            selectId: currentNode.showConf.nodeId,
+            parentId: currentNode.parentId,
+            nextId: currentNode.nextId,
+            index: currentNode.index,
           });
-          refresh();
           message.success('success');
         } catch (err: any) {
         }
       }
     });
-  }, [app, iceId, refresh]);
+  }, []);
 
+  // Initialize MindMap once
   useEffect(() => {
-    if (!containerRef.current || !treeList?.length) return;
+    if (!containerRef.current) return;
 
     const updateSize = () => {
       if (containerRef.current && mindMapRef.current) {
@@ -140,37 +211,14 @@ const MindMapComponent = ({
       }
     };
 
-    const mindMapData = transformTreeToMindMap(treeList, registeredClasses);
-
-    const customTheme = {
-      backgroundColor: '#fafafa',
-      lineWidth: 1, lineColor: '#959da5',
-      generalizationLineWidth: 1, generalizationLineColor: '#959da5',
-      root: {
-        shape: 'rectangle', marginX: 20, marginY: 0, fillColor: '#86b4da',
-        fontFamily: '微软雅黑, Microsoft YaHei', color: '#000000', fontSize: 14,
-        fontWeight: 400, borderWidth: 2, borderColor: '#c7ccd1', borderStyle: 'solid',
-        borderRadius: 4, padding: [15, 15, 15, 15]
-      },
-      second: {
-        shape: 'rectangle', marginX: 20, marginY: 15, fillColor: '#fff',
-        fontFamily: '微软雅黑, Microsoft YaHei', color: '#333', fontSize: 14,
-        fontWeight: 400, borderWidth: 1, borderColor: '#c7ccd1', borderStyle: 'solid',
-        borderRadius: 4, padding: [10, 10, 10, 10]
-      },
-      node: {
-        shape: 'rectangle', marginX: 20, marginY: 15, fillColor: '#fff',
-        fontFamily: '微软雅黑, Microsoft YaHei', color: '#333', fontSize: 14,
-        fontWeight: 400, borderWidth: 1, borderColor: '#c7ccd1', borderStyle: 'solid',
-        borderRadius: 4, padding: [10, 10, 10, 10]
-      }
+    const emptyData = {
+      data: { id: 'root', text: 'Loading...', expanded: true, isroot: true, direction: 2 },
+      children: []
     };
-
-    MindMap.usePlugin(Drag);
 
     mindMapRef.current = new MindMap({
       el: containerRef.current,
-      data: mindMapData,
+      data: emptyData,
       layout: 'logicalStructure',
       direction: 2,
       view: { zoom: 0.8 },
@@ -184,6 +232,7 @@ const MindMapComponent = ({
         if (!overlapNode) return false;
         const showConf = overlapNode.getData('showConf');
         if (showConf && [5, 6, 7].includes(showConf.nodeType)) {
+          message.warning('叶子节点不支持子节点');
           return true;
         }
         return false;
@@ -192,7 +241,8 @@ const MindMapComponent = ({
     } as any);
 
     mindMapRef.current.on('node_tree_render_end', async () => {
-      if (mindMapRef.current) {
+      if (mindMapRef.current && !initializedRef.current) {
+        initializedRef.current = true;
         await new Promise(resolve => requestAnimationFrame(resolve));
         mindMapRef.current.view.translateXTo(-400);
         mindMapRef.current.view.translateYTo(-50);
@@ -205,10 +255,14 @@ const MindMapComponent = ({
       }
     });
 
+    mindMapRef.current.on('node_dragging', () => {
+      setToolbarPos(null);
+    });
+
     mindMapRef.current.on('node_click', (node: any, e: any) => {
       const treeNode = transformMindMapToTree(node);
       if (!treeNode) return;
-      setSelectedNode(treeNode);
+      setSelectedNodeRef.current(treeNode);
       if (containerRef.current && e) {
         const rect = containerRef.current.getBoundingClientRect();
         const x = (e.clientX || e.x || 0) - rect.left;
@@ -220,13 +274,14 @@ const MindMapComponent = ({
     mindMapRef.current.on('node_dblclick', (node: any) => {
       const treeNode = transformMindMapToTree(node);
       if (!treeNode) return;
-      setSelectedNode(treeNode);
+      setSelectedNodeRef.current(treeNode);
       setToolbarPos(null);
-      onEditNode(treeNode);
+      onEditNodeRef.current(treeNode);
     });
 
     mindMapRef.current.on('draw_click', () => {
-      clearSelection();
+      setSelectedNodeRef.current(undefined);
+      setToolbarPos(null);
     });
 
     mindMapRef.current.on('afterExecCommand', (name: string, ...args: any[]) => {
@@ -242,8 +297,8 @@ const MindMapComponent = ({
         const after = name === 'INSERT_AFTER';
         const canHaveChildren = ![5, 6, 7].includes(targetData.showConf.nodeType);
         if (!canHaveChildren && moveTo) return;
-        const params = {
-          app: Number(app), iceId: Number(iceId), editType: 6,
+        const params: any = {
+          app: Number(appRef.current), iceId: Number(iceIdRef.current), editType: 6,
           parentId: dragData.parentId,
           selectId: dragData.showConf?.nodeId,
           index: dragData.index,
@@ -254,11 +309,15 @@ const MindMapComponent = ({
             ? targetData.showConf?.nodeId
             : targetData.isForward ? targetData.nextId
             : targetData.parentId,
-          nextId: dragData.nextId
+          nextId: dragData.nextId,
+          lane: laneRef.current,
         };
         apis.editConf(params)
-          .then(() => { refresh(); message.success('success'); })
-          .catch(() => { refresh(); });
+          .then(() => {
+            onMoveSuccessRef.current(params);
+            message.success('success');
+          })
+          .catch(() => { refreshRef.current(); });
       }
     });
 
@@ -269,8 +328,17 @@ const MindMapComponent = ({
       window.removeEventListener('resize', updateSize);
       if (mindMapRef.current) {
         mindMapRef.current.destroy();
+        mindMapRef.current = null;
       }
+      initializedRef.current = false;
     };
+  }, []);
+
+  // Update data when treeList or registeredClasses change
+  useEffect(() => {
+    if (!mindMapRef.current || !treeList?.length) return;
+    const mindMapData = transformTreeToMindMap(treeList, registeredClasses);
+    mindMapRef.current.updateData(mindMapData);
   }, [treeList, registeredClasses]);
 
   const isRelation = selectedNode && RelationNodeMap.has(selectedNode.showConf?.nodeType);
@@ -306,6 +374,6 @@ const MindMapComponent = ({
       )}
     </>
   );
-};
+});
 
 export default MindMapComponent;

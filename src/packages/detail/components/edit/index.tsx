@@ -3,6 +3,7 @@ import {
 } from 'antd'
 import { useEffect, useState, useRef, useMemo } from 'react'
 import apis from '../../../../apis'
+import type { EditConfResponse } from '../../../../apis'
 import { CustomDatePicker } from '../../../../components'
 import TextArea from 'antd/es/input/TextArea'
 import type { ChildrenItem, FieldItem as IFieldItem, LeafClassInfo } from '../../../../index.d'
@@ -37,7 +38,8 @@ export interface NodeFormProps {
   selectedNode: ChildrenItem | undefined
   app: string | number
   iceId: string | number
-  refresh: () => void
+  lane?: string
+  onSuccess: (editType: number, params: any, response: EditConfResponse) => void
   leafClassMap?: Record<number, LeafClassInfo[]>
   mode?: 'edit' | 'add-child' | 'add-front'
 }
@@ -79,13 +81,14 @@ const getClasses = (map: Record<number, LeafClassInfo[]> | undefined, type: numb
   return map[type] || map[String(type) as any] || []
 }
 
-const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, refresh, leafClassMap, mode = 'edit' }: NodeFormProps) => {
+const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, lane, onSuccess, leafClassMap, mode = 'edit' }: NodeFormProps) => {
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
   const [nodeType, setNodeType] = useState<number | undefined>()
   const [confName, setConfName] = useState<string | undefined>()
   const [nodeIdInput, setNodeIdInput] = useState('')
+  const [exchangeIdInput, setExchangeIdInput] = useState('')
   const initialRef = useRef<any>(null)
   const initialFieldsRef = useRef<any>(null)
 
@@ -112,6 +115,7 @@ const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, refresh, leafC
     if (!open) return
     form.resetFields()
     setNodeIdInput('')
+    setExchangeIdInput('')
     if (isCreate) {
       setNodeType(undefined); setConfName(undefined); setHasChanges(false)
       initialRef.current = '{}'
@@ -186,37 +190,46 @@ const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, refresh, leafC
       })
       const hasObj = Object.keys(obj).length > 0
 
+      let editType: number
+      let params: any
+
       if (isCreate) {
         if (!activeType) { message.warning('请选择节点类型'); return }
-        await apis.editConf({
-          app: Number(app), iceId: Number(iceId), editType: mode === 'add-front' ? 4 : 1,
+        editType = mode === 'add-front' ? 4 : 1
+        params = {
+          app: Number(app), iceId: Number(iceId), editType,
           parentId: selectedNode.parentId, selectId: selectedNode.showConf.nodeId,
           nextId: selectedNode.nextId, index: selectedNode.index,
           nodeType: activeType, relationType: isLeaf ? activeType : 1,
           confName: isLeaf ? confName : undefined,
           confField: isLeaf ? (hasObj ? JSON.stringify(obj) : confField || undefined) : undefined,
-          name: rest.name || undefined, ...rest,
-        })
+          name: rest.name || undefined, ...rest, lane,
+        }
       } else if (typeChanged || confChanged) {
-        const p: any = {
+        editType = 5
+        params = {
           app: Number(app), iceId: Number(iceId), editType: 5, selectId: selectedNode.showConf?.nodeId,
           parentId: selectedNode.parentId, nextId: selectedNode.nextId,
-          index: selectedNode.index, nodeType: activeType, ...rest,
+          index: selectedNode.index, nodeType: activeType, ...rest, lane,
         }
         if (isLeaf && confName) {
-          p.confName = confName
-          p.confField = hasObj ? JSON.stringify(obj) : confField || undefined
+          params.confName = confName
+          params.confField = hasObj ? JSON.stringify(obj) : confField || undefined
         }
-        await apis.editConf(p)
       } else {
-        await apis.editConf({
+        editType = 2
+        params = {
           app: Number(app), iceId: Number(iceId), editType: 2, selectId: selectedNode.showConf?.nodeId,
           parentId: selectedNode.parentId, nextId: selectedNode.nextId,
           ...selectedNode.showConf, ...rest, confName: undefined,
-          confField: !selectedNode.showConf?.haveMeta ? confField : JSON.stringify(obj)
-        })
+          confField: !selectedNode.showConf?.haveMeta ? confField : JSON.stringify(obj),
+          lane,
+        }
       }
-      refresh(); message.success('success'); onClose()
+
+      const res = await apis.editConf(params) as any as EditConfResponse
+      onSuccess(editType, params, res)
+      message.success('success'); onClose()
     } catch (err: any) {
       if (err.errorFields) return
     } finally { setLoading(false) }
@@ -226,14 +239,37 @@ const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, refresh, leafC
     if (!nodeIdInput.trim() || !selectedNode) return
     try {
       setLoading(true)
-      await apis.editConf({
-        app, iceId, editType: mode === 'add-front' ? 4 : 1,
+      const editType = mode === 'add-front' ? 4 : 1
+      const params = {
+        app, iceId, editType,
         parentId: selectedNode.parentId, selectId: selectedNode.showConf.nodeId,
         nextId: selectedNode.nextId, index: selectedNode.index,
         multiplexIds: nodeIdInput.trim(), relationType: 13, nodeType: 13,
         name: form.getFieldValue('name') || undefined,
-      })
-      refresh(); message.success('success'); onClose()
+        lane,
+      }
+      const res = await apis.editConf(params) as any as EditConfResponse
+      onSuccess(editType, params, res)
+      message.success('success'); onClose()
+    } catch {}
+    finally { setLoading(false) }
+  }
+
+  const handleExchangeLink = async () => {
+    if (!exchangeIdInput.trim() || !selectedNode) return
+    try {
+      setLoading(true)
+      const params = {
+        app: Number(app), iceId: Number(iceId), editType: 5,
+        selectId: selectedNode.showConf?.nodeId,
+        parentId: selectedNode.parentId, nextId: selectedNode.nextId,
+        index: selectedNode.index,
+        multiplexIds: exchangeIdInput.trim(),
+        lane,
+      }
+      const res = await apis.editConf(params) as any as EditConfResponse
+      onSuccess(5, params, res)
+      message.success('success'); onClose()
     } catch {}
     finally { setLoading(false) }
   }
@@ -242,6 +278,7 @@ const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, refresh, leafC
 
   const title = isCreate ? (mode === 'add-front' ? '添加前置节点' : '添加子节点') : `编辑节点 #${selectedNode.showConf?.nodeId || ''}`
   const canSave = isCreate ? !!activeType && (!isLeaf || !!confName) : hasChanges
+  const isNotRoot = !selectedNode.isRoot && (selectedNode.parentId != null || selectedNode.nextId != null)
 
   return (
     <Modal title={title} open={open} onCancel={onClose} width={820} destroyOnClose centered
@@ -351,6 +388,16 @@ const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, refresh, leafC
               <Input placeholder="引用已有节点 ID（逗号分隔）" value={nodeIdInput}
                 onChange={e => setNodeIdInput(e.target.value)} onPressEnter={handleLink} />
               <Button type="primary" loading={loading} onClick={handleLink} disabled={!nodeIdInput.trim()}>引用</Button>
+            </Space.Compact>
+          </div>
+        )}
+
+        {!isCreate && isNotRoot && (
+          <div style={{ borderTop: '1px solid #f0f0f0', paddingTop: 16, marginTop: 16 }}>
+            <Space.Compact style={{ width: '100%' }}>
+              <Input placeholder="引用替换：输入节点 ID" value={exchangeIdInput}
+                onChange={e => setExchangeIdInput(e.target.value)} onPressEnter={handleExchangeLink} />
+              <Button type="primary" loading={loading} onClick={handleExchangeLink} disabled={!exchangeIdInput.trim()}>替换</Button>
             </Space.Compact>
           </div>
         )}

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { Input, Button, Modal, Form, message } from 'antd'
 import { PlusOutlined, SettingOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
@@ -22,6 +22,8 @@ const AppSelector = ({ currentAppId, onClose, onSelect }: Props) => {
   const [search, setSearch] = useState('')
   const [editModal, setEditModal] = useState<{ open: boolean; item?: AppItem }>({ open: false })
   const [form] = Form.useForm()
+  const [hasChanges, setHasChanges] = useState(false)
+  const initialValuesRef = useRef<{ name: string; info: string }>({ name: '', info: '' })
 
   const { data, run: refreshApps } = useRequest(apis.appList)
 
@@ -36,10 +38,14 @@ const AppSelector = ({ currentAppId, onClose, onSelect }: Props) => {
 
   useEffect(() => {
     if (editModal.open && editModal.item) {
-      form.setFieldsValue({ name: editModal.item.name, info: editModal.item.info })
+      const values = { name: editModal.item.name, info: editModal.item.info }
+      form.setFieldsValue(values)
+      initialValuesRef.current = values
     } else if (editModal.open) {
       form.resetFields()
+      initialValuesRef.current = { name: '', info: '' }
     }
+    setHasChanges(false)
   }, [editModal, form])
 
   const list: AppItem[] = (data?.list || []).filter((item: AppItem) =>
@@ -51,6 +57,21 @@ const AppSelector = ({ currentAppId, onClose, onSelect }: Props) => {
     onClose()
     onSelect?.(id)
   }
+
+  const isEdit = !!editModal.item
+  const onValuesChange = () => {
+    const current = form.getFieldsValue()
+    if (isEdit) {
+      const init = initialValuesRef.current
+      setHasChanges(
+        current.name !== init.name || (current.info || '') !== (init.info || '')
+      )
+    } else {
+      setHasChanges(!!current.name?.trim())
+    }
+  }
+
+  const canSave = hasChanges
 
   const onEditOk = async () => {
     const values = await form.validateFields()
@@ -106,12 +127,13 @@ const AppSelector = ({ currentAppId, onClose, onSelect }: Props) => {
         onCancel={() => setEditModal({ open: false })}
         onOk={onEditOk}
         confirmLoading={editLoading}
+        okButtonProps={{ disabled: !canSave }}
       >
-        <Form form={form} labelCol={{ span: 4 }}>
+        <Form form={form} labelCol={{ span: 4 }} onValuesChange={onValuesChange}>
           <Form.Item name="name" label="名称" rules={[{ required: true, message: '请输入名称' }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="info" label="描述" rules={[{ required: true, message: '请输入描述' }]}>
+          <Form.Item name="info" label="描述">
             <Input />
           </Form.Item>
         </Form>

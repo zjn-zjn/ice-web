@@ -1,5 +1,5 @@
 import { Modal, Form, Input, InputNumber, message } from 'antd'
-import { useEffect } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import apis from '../../../apis'
 import { useRequest } from 'ahooks'
 
@@ -14,6 +14,8 @@ interface Props {
 
 const EditAddModal = ({ open, data, onCancel, onOk, app, folderPath }: Props) => {
   const [form] = Form.useForm()
+  const [hasChanges, setHasChanges] = useState(false)
+  const initialValuesRef = useRef<any>({})
 
   const { run, loading } = useRequest(
     (params: object, isCreate: boolean) => isCreate ? apis.iceCreate(params) : apis.iceEdit(params),
@@ -28,15 +30,30 @@ const EditAddModal = ({ open, data, onCancel, onOk, app, folderPath }: Props) =>
 
   useEffect(() => {
     if (open && data) {
-      form.setFieldsValue({
-        name: data.name,
-        scenes: data.scenes,
-        debug: data.debug
-      })
+      const values = { name: data.name, scenes: data.scenes, debug: data.debug }
+      form.setFieldsValue(values)
+      initialValuesRef.current = values
     } else {
       form.resetFields()
+      initialValuesRef.current = {}
     }
+    setHasChanges(false)
   }, [open, data, form])
+
+  const isEdit = !!data
+  const onValuesChange = () => {
+    if (isEdit) {
+      const current = form.getFieldsValue()
+      const init = initialValuesRef.current
+      setHasChanges(
+        (current.name || '') !== (init.name || '') ||
+        (current.scenes || '') !== (init.scenes || '') ||
+        (current.debug ?? '') !== (init.debug ?? '')
+      )
+    }
+  }
+
+  const canSave = isEdit ? hasChanges : true
 
   const handleOk = () => {
     form.validateFields().then(values => {
@@ -59,10 +76,12 @@ const EditAddModal = ({ open, data, onCancel, onOk, app, folderPath }: Props) =>
       onCancel={onCancel}
       onOk={handleOk}
       confirmLoading={loading}
+      okButtonProps={{ disabled: !canSave }}
     >
       <Form
         form={form}
         labelCol={{ span: 6 }}
+        onValuesChange={onValuesChange}
       >
         {!data && (
           <Form.Item

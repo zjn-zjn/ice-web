@@ -186,7 +186,7 @@ const FolderPopover = ({ appId, path, currentBaseId, onClose, onNavigateFolder }
       const folderPath = path ? `${path}/${item.name}` : item.name
       return [
         { key: 'rename', label: '重命名', onClick: () => setRenamingItem({ path: folderPath, newName: item.name }) },
-        { key: 'move', label: '移动到', onClick: () => openMovePicker([item]) },
+        { key: 'move', label: '移动', onClick: () => openMovePicker([item]) },
         { key: 'delete', label: '删除', danger: true, onClick: () => handleDelete(item) }
       ]
     }
@@ -195,7 +195,7 @@ const FolderPopover = ({ appId, path, currentBaseId, onClose, onNavigateFolder }
       { key: 'export', label: '导出', onClick: () => setExportObj({ visible: true, iceId: item.id }) },
       { key: 'backup', label: '备份', onClick: () => setBackupObj({ visible: true, iceId: item.id! }) },
       { key: 'history', label: '历史', onClick: () => setHistoryObj({ visible: true, iceId: item.id!, name: item.name || `#${item.id}` }) },
-      { key: 'move', label: '移动到', onClick: () => openMovePicker([item]) },
+      { key: 'move', label: '移动', onClick: () => openMovePicker([item]) },
       { key: 'delete', label: '删除', danger: true, onClick: () => handleDelete(item) }
     ]
   }

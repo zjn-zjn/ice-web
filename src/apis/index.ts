@@ -1,5 +1,5 @@
 import request from '../utils/request'
-import type { DetailData, FolderListResult, FolderTreeNode, BatchItem } from '../index.d'
+import type { DetailData, FolderListResult, FolderTreeNode, BatchItem, ChildrenItem } from '../index.d'
 
 const API_PREFIX = '/ice-server'
 
@@ -7,6 +7,11 @@ export interface ApiResponse<T = any> {
   ret: number
   data: T
   msg?: string
+}
+
+export interface EditConfResponse {
+  nodeId: number
+  nodes?: ChildrenItem[]
 }
 
 interface AppItem {
@@ -46,7 +51,7 @@ const apis = {
     request.get<any>(`${API_PREFIX}/conf/node-meta`, params),
   
   editConf: (data: any) =>
-    request.post<ApiResponse>(`${API_PREFIX}/conf/edit`, data),
+    request.post<EditConfResponse>(`${API_PREFIX}/conf/edit`, data),
   
   getLanes: (params: { app: string | number }) =>
     request.get<string[]>(`${API_PREFIX}/conf/lane/list`, params),

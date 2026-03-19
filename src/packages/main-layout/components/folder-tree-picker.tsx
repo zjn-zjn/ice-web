@@ -55,7 +55,7 @@ const FolderTreePicker = ({ open, appId, onCancel, onOk }: Props) => {
 
   return (
     <Modal
-      title="移动到"
+      title="移动"
       open={open}
       onCancel={onCancel}
       onOk={() => onOk(selectedPath)}

@@ -1,5 +1,5 @@
 import apis from '../../apis'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Button, Modal, Form, Input, message } from 'antd'
 import { FormOutlined, PlusOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
@@ -23,6 +23,8 @@ interface EditModel {
 const AppList = () => {
   const navigate = useNavigate()
   const [form] = Form.useForm()
+  const [hasChanges, setHasChanges] = useState(false)
+  const initialValuesRef = useRef<{ name: string; info: string }>({ name: '', info: '' })
   const [editModel, setEditModel] = useState<EditModel>({
     type: 1,
     open: false,
@@ -44,10 +46,10 @@ const AppList = () => {
 
   useEffect(() => {
     if (editModel.open) {
-      form.setFieldsValue({
-        name: editModel.name,
-        info: editModel.info
-      })
+      const values = { name: editModel.name, info: editModel.info }
+      form.setFieldsValue(values)
+      initialValuesRef.current = values
+      setHasChanges(false)
     }
   }, [editModel, form])
 
@@ -60,7 +62,22 @@ const AppList = () => {
       id: 0
     })
     form.resetFields()
+    setHasChanges(false)
   }
+
+  const onValuesChange = () => {
+    const current = form.getFieldsValue()
+    if (editModel.type === 2) {
+      const init = initialValuesRef.current
+      setHasChanges(
+        current.name !== init.name || (current.info || '') !== (init.info || '')
+      )
+    } else {
+      setHasChanges(!!current.name?.trim())
+    }
+  }
+
+  const canSave = editModel.type === 1 ? hasChanges : hasChanges
 
   const onOk = async () => {
     try {
@@ -134,8 +151,9 @@ const AppList = () => {
         okText='确认'
         cancelText='取消'
         confirmLoading={loading}
+        okButtonProps={{ disabled: !canSave }}
       >
-        <Form form={form}>
+        <Form form={form} onValuesChange={onValuesChange}>
           <Form.Item
             label='名称'
             name='name'
@@ -146,7 +164,6 @@ const AppList = () => {
           <Form.Item
             label='描述'
             name='info'
-            rules={[{ required: true, message: '请输入描述' }]}
           >
             <Input />
           </Form.Item>

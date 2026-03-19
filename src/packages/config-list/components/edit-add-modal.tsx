@@ -8,10 +8,11 @@ interface Props {
   data?: any
   onCancel: () => void
   onOk: () => void
-  app: string
+  app: string | number
+  folderPath?: string
 }
 
-const EditAddModal = ({ open, data, onCancel, onOk, app }: Props) => {
+const EditAddModal = ({ open, data, onCancel, onOk, app, folderPath }: Props) => {
   const [form] = Form.useForm()
 
   const { run, loading } = useRequest(
@@ -22,9 +23,6 @@ const EditAddModal = ({ open, data, onCancel, onOk, app }: Props) => {
         message.success('success')
         onOk()
       },
-      onError: (err: any) => {
-        message.error(err.msg || 'server error')
-      }
     }
   )
 
@@ -45,9 +43,9 @@ const EditAddModal = ({ open, data, onCancel, onOk, app }: Props) => {
       const isCreate = !data
       if (isCreate) {
         const { specifiedId, ...rest } = values
-        run({ app, ...rest, id: specifiedId || undefined }, true)
+        run({ app: Number(app), ...rest, id: specifiedId || undefined, path: folderPath || '' }, true)
       } else {
-        run({ app, ...values, id: data.id }, false)
+        run({ app: Number(app), ...values, id: data.id }, false)
       }
     }).catch(err => {
       console.error(err)
@@ -56,7 +54,7 @@ const EditAddModal = ({ open, data, onCancel, onOk, app }: Props) => {
 
   return (
     <Modal
-      title={data ? '编辑ICE' : '新增ICE'}
+      title={data ? '编辑Rule' : '新增Rule'}
       open={open}
       onCancel={onCancel}
       onOk={handleOk}
@@ -95,7 +93,7 @@ const EditAddModal = ({ open, data, onCancel, onOk, app }: Props) => {
           name="debug"
           label="debug"
         >
-          <Input type="number" />
+          <InputNumber style={{ width: '100%' }} />
         </Form.Item>
       </Form>
     </Modal>

@@ -17,10 +17,10 @@ interface Props {
   name: string
   open: boolean
   onCancel: () => void
-  app: string
+  app: string | number
   iceId: string | number
   openExportModal: (id: number, pushId?: number) => void
-  getConfigList: () => void
+  getConfigList?: () => void
 }
 
 const BackupHistory = ({
@@ -35,8 +35,8 @@ const BackupHistory = ({
   const { data: response, run, loading } = useRequest(
     () =>
       apis.pushHistory({
-        app,
-        iceId
+        app: Number(app),
+        iceId: Number(iceId)
       }),
     {
       manual: true
@@ -44,31 +44,25 @@ const BackupHistory = ({
   )
 
   const { run: rollbackRun } = useRequest(
-    (pushId: number) => apis.rollback({ app, pushId }),
+    (pushId: number) => apis.rollback({ app: Number(app), pushId }),
     {
       manual: true,
       onSuccess: () => {
         onCancel()
-        getConfigList()
+        getConfigList?.()
         message.success('success')
       },
-      onError: (err: any) => {
-        message.error(err.msg || 'server error')
-      }
     }
   )
 
   const { run: deleteRun } = useRequest(
-    (pushId: number) => apis.deleteHistory({ app, pushId }),
+    (pushId: number) => apis.deleteHistory({ app: Number(app), pushId }),
     {
       manual: true,
       onSuccess: () => {
         run()
         message.success('success')
       },
-      onError: (err: any) => {
-        message.error(err.msg || 'server error')
-      }
     }
   )
 

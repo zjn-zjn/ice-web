@@ -134,3 +134,38 @@ interface FieldItem {
   value: string
   valueNull: boolean
 }
+
+/**
+ * Folder types
+ */
+export interface FolderItem {
+  type: 'folder' | 'base'
+  name: string
+  id?: number
+  confId?: number
+  scenes?: string
+  debug?: number
+  childCount?: number
+}
+
+export interface FolderListResult {
+  list: FolderItem[]
+  total: number
+  pageNum: number
+  pageSize: number
+  path: string
+  actualPath: string
+}
+
+export interface FolderTreeNode {
+  name: string
+  path: string
+  children: FolderTreeNode[]
+}
+
+export interface BatchItem {
+  type: 'folder' | 'base'
+  name?: string
+  id?: number
+  path?: string
+}

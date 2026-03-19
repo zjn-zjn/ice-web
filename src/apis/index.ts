@@ -1,5 +1,5 @@
 import request from '../utils/request'
-import type { DetailData } from '../index.d'
+import type { DetailData, FolderListResult, FolderTreeNode, BatchItem } from '../index.d'
 
 const API_PREFIX = '/ice-server'
 
@@ -40,7 +40,7 @@ const apis = {
     request.get<ConfigListResponse>(`${API_PREFIX}/base/list`, params),
   
   details: (params: { app: number, iceId: number, address?: string, lane?: string }) =>
-    request.get<DetailData>(`${API_PREFIX}/conf/detail`, params),
+    request.get<DetailData>(`${API_PREFIX}/conf/detail`, params, { hideErrorMessage: true } as any),
 
   nodeMeta: (params: { app: string | number, lane?: string, address?: string }) =>
     request.get<any>(`${API_PREFIX}/conf/node-meta`, params),
@@ -68,6 +68,9 @@ const apis = {
 
   iceEdit: (data: any) =>
     request.post<ApiResponse>(`${API_PREFIX}/base/edit`, data),
+
+  iceDelete: (params: { app: number, id: number }) =>
+    request.get(`${API_PREFIX}/base/delete`, params),
   
   iceExport: (params: { iceId: string | number, app: string | number, pushId?: number }) =>
     request.get<string>(`${API_PREFIX}/base/export`, params),
@@ -80,9 +83,38 @@ const apis = {
   
   release: (params?: any) =>
     request.get<ApiResponse>(`${API_PREFIX}/conf/release`, params),
-  
+
   updateClean: (params?: any) =>
-    request.get<ApiResponse>(`${API_PREFIX}/conf/update_clean`, params)
+    request.get<ApiResponse>(`${API_PREFIX}/conf/update_clean`, params),
+
+  // Folder APIs
+  folderCreate: (data: { app: number; path: string; name: string }) =>
+    request.post(`${API_PREFIX}/folder/create`, data),
+
+  folderRename: (data: { app: number; path: string; newName: string }) =>
+    request.post(`${API_PREFIX}/folder/rename`, data),
+
+  folderDelete: (data: { app: number; path: string }) =>
+    request.post<{ folderCount: number; baseCount: number }>(`${API_PREFIX}/folder/delete`, data),
+
+  folderMove: (data: { app: number; path: string; targetPath: string }) =>
+    request.post(`${API_PREFIX}/folder/move`, data),
+
+  folderTree: (params: { app: number }) =>
+    request.get<FolderTreeNode[]>(`${API_PREFIX}/folder/tree`, params),
+
+  folderList: (params: { app: number; path?: string; pageNum: number; pageSize: number; name?: string }) =>
+    request.get<FolderListResult>(`${API_PREFIX}/folder/list`, params),
+
+  // Batch operations
+  batchMove: (data: { app: number; items: BatchItem[]; targetPath: string }) =>
+    request.post(`${API_PREFIX}/base/batch/move`, data),
+
+  batchDelete: (data: { app: number; items: BatchItem[] }) =>
+    request.post(`${API_PREFIX}/base/batch/delete`, data),
+
+  exportFolder: (params: { app: number; path: string }) =>
+    request.get<string>(`${API_PREFIX}/base/export/folder`, params)
 }
 
 export default apis

@@ -11,7 +11,7 @@ interface Props {
   pushId?: number
   onCancel: () => void
   onOk: () => void
-  app: string
+  app: string | number
 }
 
 const ExportModal = ({ open, iceId, iceIds, pushId, onCancel, onOk, app }: Props) => {
@@ -20,9 +20,9 @@ const ExportModal = ({ open, iceId, iceIds, pushId, onCancel, onOk, app }: Props
   const { data, run } = useRequest(
     () => {
       if (isBatch) {
-        return apis.iceExportBatch({ iceIds: iceIds!, app })
+        return apis.iceExportBatch({ iceIds: iceIds!.map(Number), app: Number(app) })
       }
-      return apis.iceExport({ iceId: iceId!, app, pushId })
+      return apis.iceExport({ iceId: Number(iceId!), app: Number(app), pushId })
     },
     {
       manual: true

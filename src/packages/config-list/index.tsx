@@ -90,9 +90,6 @@ const ConfigList = () => {
     },
     {
       refreshDeps: [app, pageId, pageSize],
-      onError: (error) => {
-        message.error('获取配置列表失败：' + error.message)
-      }
     }
   )
 

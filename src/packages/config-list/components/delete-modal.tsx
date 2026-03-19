@@ -25,9 +25,6 @@ const DeleteModal = ({
         message.success('success')
         onOk()
       },
-      onError: (err: any) => {
-        message.error(err.msg || 'server error')
-      }
     }
   )
 

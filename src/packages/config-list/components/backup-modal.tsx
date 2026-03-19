@@ -8,22 +8,19 @@ interface Props {
   iceId: string | number
   onCancel: () => void
   onOk: () => void
-  app: string
+  app: string | number
 }
 
 const BackupModal = ({ open, iceId, onCancel, onOk, app }: Props) => {
   const [form] = Form.useForm()
   const { run, loading } = useRequest(
-    (params: { reason?: string }) => apis.pushConf({ ...params, iceId, app }),
+    (params: { reason?: string }) => apis.pushConf({ ...params, iceId: Number(iceId), app: Number(app) }),
     {
       manual: true,
       onSuccess: () => {
         onOk()
         message.success('success')
       },
-      onError: (err: any) => {
-        message.error(err.msg || 'server error')
-      }
     }
   )
 

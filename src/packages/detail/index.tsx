@@ -4,13 +4,12 @@ import type { TreeItem } from './types'
 import type { DetailData, ChildrenItem, ClientRegistryInfo, LeafClassInfo } from '../../index.d'
 import MindMapComponent from './components/mind-map'
 import NodeFormModal from './components/edit'
-import type { NodeFormProps } from './components/edit'
 import { useCallback, useMemo, useState, useEffect } from 'react'
 import { Button, Cascader, Space, Modal, message, Badge, Tooltip } from 'antd'
 import { FullscreenOutlined, FullscreenExitOutlined } from '@ant-design/icons'
 import ImportModal from '../config-list/components/import-modal'
 import ExportModal from '../config-list/components/export-modal'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate, useParams } from 'react-router-dom'
 import './index.less'
 
 interface NodeMeta {
@@ -21,18 +20,44 @@ interface NodeMeta {
 
 const TRUNK = 'trunk'
 
+// Extract app and iceId from either new URL pattern or legacy query params
+function useAppAndIceId() {
+  const { appId } = useParams()
+  const location = useLocation()
+
+  if (appId) {
+    // New URL pattern: /app/:appId/base/.../iceId
+    const prefix = `/app/${appId}/base`
+    const rest = decodeURIComponent(location.pathname.slice(prefix.length)).replace(/^\//, '')
+    const segments = rest.split('/').filter(Boolean)
+    const iceId = segments[segments.length - 1] || ''
+    return { app: Number(appId), iceId: Number(iceId) }
+  }
+
+  // Legacy query params
+  const searchParams = new URLSearchParams(location.search)
+  return {
+    app: Number(searchParams.get('app') || 0),
+    iceId: Number(searchParams.get('iceId') || 0)
+  }
+}
+
 const Detail = () => {
   const location = useLocation()
   const navigate = useNavigate()
+  const { app, iceId } = useAppAndIceId()
   const searchParams = new URLSearchParams(location.search)
-  const iceId = searchParams.get('iceId') || ''
-  const app = searchParams.get('app') || ''
   const urlLane = searchParams.get('lane')
+  const urlAddress = searchParams.get('address')
 
   const STORAGE_KEY = `ice_selector_${app}`
 
   const getInitialSelector = (): string[] => {
-    if (urlLane) return [urlLane]
+    if (urlLane) {
+      const val = [urlLane]
+      if (urlAddress) val.push(urlAddress)
+      return val
+    }
     if (app) {
       try {
         const saved = sessionStorage.getItem(STORAGE_KEY)
@@ -58,16 +83,31 @@ const Detail = () => {
     const initial = getInitialSelector()
     setSelectorValue(initial)
     const initLane = initial[0] === TRUNK ? undefined : initial[0]
-    if (initLane && !urlLane) {
+    const initAddress = initial.length > 1 ? initial[1] : undefined
+    if ((initLane && !urlLane) || (initAddress && !urlAddress)) {
       const params = new URLSearchParams(location.search)
-      params.set('lane', initLane)
+      if (initLane) params.set('lane', initLane)
+      if (initAddress) params.set('address', initAddress)
       navigate(`${location.pathname}?${params.toString()}`, { replace: true })
     }
-  }, [iceId, app, urlLane])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [iceId, app, urlLane, urlAddress])
 
   const { data: treeData, run: refreshTree } = useRequest<DetailData, any>(
-    () => apis.details({ app, iceId, address: 'server', ...(lane ? { lane } : {}) } as any),
-    { refreshDeps: [app, iceId, lane] }
+    () => apis.details({ app, iceId, address: 'server', ...(lane ? { lane } : {}) }),
+    {
+      refreshDeps: [app, iceId, lane],
+      onError: () => {
+        // Base doesn't exist, navigate up to folder level
+        const prefix = `/app/${app}/base`
+        const rest = decodeURIComponent(location.pathname.slice(prefix.length)).replace(/^\//, '')
+        const segments = rest.split('/').filter(Boolean)
+        segments.pop() // remove the iceId
+        const parentPath = segments.length ? `${prefix}/${segments.join('/')}` : prefix
+        navigate(parentPath, { replace: true })
+        message.warning('Rule 不存在，已返回上级目录')
+      }
+    }
   )
 
   const { data: meta } = useRequest<NodeMeta, any>(
@@ -95,6 +135,12 @@ const Detail = () => {
       params.set('lane', newLane)
     } else {
       params.delete('lane')
+    }
+    const newAddress = val.length > 1 ? val[1] : undefined
+    if (newAddress) {
+      params.set('address', newAddress)
+    } else {
+      params.delete('address')
     }
     navigate(`${location.pathname}?${params.toString()}`, { replace: true })
   }
@@ -190,8 +236,28 @@ const Detail = () => {
   }
 
   const clean = () => {
+    const updatingNodes: string[] = []
+    const collectUpdating = (items: TreeItem[]) => {
+      for (const item of items) {
+        if (item.showConf?.updating) {
+          updatingNodes.push(`${item.showConf.nodeId} - ${item.showConf.labelName}`)
+        }
+        if (item.children) collectUpdating(item.children)
+      }
+    }
+    collectUpdating(treeList)
+
     Modal.confirm({
       title: '确认清除所有变更吗？',
+      width: 480,
+      content: updatingNodes.length > 0 ? (
+        <div style={{ maxHeight: 300, overflow: 'auto', marginTop: 8 }}>
+          <div style={{ marginBottom: 4, fontWeight: 500 }}>{updatingNodes.length} 个节点有变更：</div>
+          {updatingNodes.map((n, i) => (
+            <div key={i} style={{ fontSize: 12, color: '#666', padding: '2px 0' }}>{n}</div>
+          ))}
+        </div>
+      ) : undefined,
       onOk: async () => {
         try {
           await apis.updateClean({ app, iceId })

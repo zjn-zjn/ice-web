@@ -35,8 +35,8 @@ export interface NodeFormProps {
   open: boolean
   onClose: () => void
   selectedNode: ChildrenItem | undefined
-  app: string
-  iceId: string
+  app: string | number
+  iceId: string | number
   refresh: () => void
   leafClassMap?: Record<number, LeafClassInfo[]>
   mode?: 'edit' | 'add-child' | 'add-front'
@@ -189,7 +189,7 @@ const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, refresh, leafC
       if (isCreate) {
         if (!activeType) { message.warning('请选择节点类型'); return }
         await apis.editConf({
-          app, iceId, editType: mode === 'add-front' ? 4 : 1,
+          app: Number(app), iceId: Number(iceId), editType: mode === 'add-front' ? 4 : 1,
           parentId: selectedNode.parentId, selectId: selectedNode.showConf.nodeId,
           nextId: selectedNode.nextId, index: selectedNode.index,
           nodeType: activeType, relationType: isLeaf ? activeType : 1,
@@ -199,7 +199,7 @@ const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, refresh, leafC
         })
       } else if (typeChanged || confChanged) {
         const p: any = {
-          app, iceId, editType: 5, selectId: selectedNode.showConf?.nodeId,
+          app: Number(app), iceId: Number(iceId), editType: 5, selectId: selectedNode.showConf?.nodeId,
           parentId: selectedNode.parentId, nextId: selectedNode.nextId,
           index: selectedNode.index, nodeType: activeType, ...rest,
         }
@@ -210,7 +210,7 @@ const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, refresh, leafC
         await apis.editConf(p)
       } else {
         await apis.editConf({
-          app, iceId, editType: 2, selectId: selectedNode.showConf?.nodeId,
+          app: Number(app), iceId: Number(iceId), editType: 2, selectId: selectedNode.showConf?.nodeId,
           parentId: selectedNode.parentId, nextId: selectedNode.nextId,
           ...selectedNode.showConf, ...rest, confName: undefined,
           confField: !selectedNode.showConf?.haveMeta ? confField : JSON.stringify(obj)

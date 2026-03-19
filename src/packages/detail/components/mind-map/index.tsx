@@ -14,8 +14,8 @@ interface Props {
   refresh: () => void;
   setSelectedNode: (item: TreeItem | undefined) => void;
   selectedNode: TreeItem | undefined;
-  app: string;
-  iceId: string;
+  app: string | number;
+  iceId: string | number;
   lane?: string;
   onEditNode: (node: TreeItem) => void;
   onAddChild: (node: TreeItem) => void;
@@ -43,7 +43,7 @@ const transformTreeToMindMap = (treeItems: TreeItem[], registeredClasses: Set<st
     const node = {
       data: {
         id: item.showConf.uniqueKey,
-        text: `${item.showConf.labelName}`,
+        text: item.isForward ? `◀ ${item.showConf.labelName}` : `${item.showConf.labelName}`,
         expanded: true,
         direction: 2,
         isroot: item.isRoot,
@@ -58,10 +58,10 @@ const transformTreeToMindMap = (treeItems: TreeItem[], registeredClasses: Set<st
         forwardId: item.forwardId,
         isForward: item.isForward,
         forward: item.forward,
-        color: isUnregistered ? '#999' : (item.isForward ? '#f50' : undefined),
+        color: isUnregistered ? '#999' : (item.isForward ? '#722ed1' : undefined),
         borderColor: item.showConf.updating ? '#fa8c16'
           : isUnregistered ? '#ccc'
-          : (item.isForward ? '#f50' : undefined),
+          : (item.isForward ? '#722ed1' : undefined),
         borderDasharray: (item.showConf.updating || isUnregistered) ? '5,3' : undefined,
         fillColor: isUnregistered ? '#f5f5f5' : undefined,
       },
@@ -114,7 +114,7 @@ const MindMapComponent = ({
       onOk: async () => {
         try {
           await apis.editConf({
-            app, iceId, editType: 3,
+            app: Number(app), iceId: Number(iceId), editType: 3,
             selectId: currentNode.showConf.nodeId,
             parentId: currentNode.parentId,
             nextId: currentNode.nextId,
@@ -123,7 +123,6 @@ const MindMapComponent = ({
           refresh();
           message.success('success');
         } catch (err: any) {
-          message.error(err.msg || 'server error');
         }
       }
     });
@@ -244,7 +243,7 @@ const MindMapComponent = ({
         const canHaveChildren = ![5, 6, 7].includes(targetData.showConf.nodeType);
         if (!canHaveChildren && moveTo) return;
         const params = {
-          app, iceId, editType: 6,
+          app: Number(app), iceId: Number(iceId), editType: 6,
           parentId: dragData.parentId,
           selectId: dragData.showConf?.nodeId,
           index: dragData.index,
@@ -259,7 +258,7 @@ const MindMapComponent = ({
         };
         apis.editConf(params)
           .then(() => { refresh(); message.success('success'); })
-          .catch((err: any) => { message.error(err.msg || 'server error'); refresh(); });
+          .catch(() => { refresh(); });
       }
     });
 

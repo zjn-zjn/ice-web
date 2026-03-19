@@ -7,22 +7,19 @@ interface Props {
   open: boolean
   onCancel: () => void
   onOk: () => void
-  app: string
+  app: string | number
 }
 
 const ImportModal = ({ open, onCancel, onOk, app }: Props) => {
   const [json, setJson] = useState('')
   const { run, loading } = useRequest(
-    () => apis.iceImport({ json, app }),
+    () => apis.iceImport({ json, app: Number(app) }),
     {
       manual: true,
       onSuccess: () => {
         message.success('success')
         onOk()
       },
-      onError: (err: any) => {
-        message.error(err.msg || 'server error')
-      }
     }
   )
 

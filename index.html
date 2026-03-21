@@ -7,6 +7,14 @@
     <title>ice配置后台</title>
   </head>
   <body>
+    <script>
+      ;(function() {
+        var t = localStorage.getItem('ice-theme')
+        if (!t) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+        document.documentElement.setAttribute('data-theme', t)
+        if (t === 'dark') document.body.style.background = '#141414'
+      })()
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

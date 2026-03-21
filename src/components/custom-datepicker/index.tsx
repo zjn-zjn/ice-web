@@ -1,15 +1,21 @@
 import { FC } from 'react'
-import dayjs from 'dayjs'
-import { DatePicker, DatePickerProps } from 'antd'
+import dayjs, { Dayjs } from 'dayjs'
+import { DatePicker } from 'antd'
 
-const CustomDatePicker: FC<DatePickerProps> = ({
+interface CustomDatePickerProps {
+  value?: number | null
+  onChange?: (value: number | null, dateString: string | string[]) => void
+  [key: string]: any
+}
+
+const CustomDatePicker: FC<CustomDatePickerProps> = ({
   onChange,
   value,
   ...otherProps
 }) => {
-  const dateOnChange = (date: any, dateString: string) => {
+  const dateOnChange = (date: Dayjs | null, dateString: string | string[]) => {
     if (onChange) {
-      onChange(date?.set('millisecond', 0).valueOf(), dateString)
+      onChange(date ? date.set('millisecond', 0).valueOf() : null, dateString)
     }
   }
 
@@ -17,8 +23,8 @@ const CustomDatePicker: FC<DatePickerProps> = ({
     <DatePicker
       format='YYYY-MM-DD HH:mm:ss'
       {...otherProps}
-      onChange={dateOnChange as any}
-      value={value && dayjs(value)}
+      onChange={dateOnChange}
+      value={value ? dayjs(value) : null}
     />
   )
 }

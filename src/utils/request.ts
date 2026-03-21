@@ -1,6 +1,5 @@
-import axios, { AxiosRequestConfig, AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios'
+import axios, { AxiosResponse, AxiosError, InternalAxiosRequestConfig } from 'axios'
 import qs from 'qs'
-import { message } from 'antd'
 
 // 从环境变量获取 baseURL，只在开发环境中使用
 const baseURL = import.meta.env.DEV ? (import.meta.env.VITE_API_BASE_URL || '') : ''
@@ -12,20 +11,20 @@ const instance = axios.create({
   withCredentials: false,
 })
 
-interface ApiResponse<T = any> {
-  ret: number
-  data: T
-  msg?: string
-}
-
 interface RequestConfig extends InternalAxiosRequestConfig {
   hideErrorMessage?: boolean
+}
+
+// Message function holder - set from App component context
+let showError: (msg: string) => void = (msg) => console.error(msg)
+
+export function setMessageHandler(handler: (msg: string) => void) {
+  showError = handler
 }
 
 // 请求拦截器
 instance.interceptors.request.use(
   (config: RequestConfig) => {
-    // 可以在这里添加token等认证信息
     return config
   },
   (error: AxiosError) => {
@@ -41,20 +40,20 @@ instance.interceptors.response.use(
       return data.data
     }
     if (!(response.config as RequestConfig).hideErrorMessage) {
-      message.error(data.msg || '请求失败')
+      showError(data.msg || '请求失败')
     }
     return Promise.reject(data)
   },
   (error: AxiosError) => {
     if (!(error.config as RequestConfig)?.hideErrorMessage) {
-      message.error(error.message || '网络错误')
+      showError(error.message || '网络错误')
     }
     return Promise.reject(error)
   }
 )
 
 export const request = {
-  get: <T = any>(url: string, params?: any, config?: RequestConfig) =>
+  get: <T = any>(url: string, params?: any, config?: Partial<RequestConfig>) =>
     instance.get<any, T>(url, {
       params,
       paramsSerializer: (params) =>
@@ -62,7 +61,7 @@ export const request = {
       ...config,
     }),
 
-  post: <T = any>(url: string, data?: any, config?: RequestConfig) =>
+  post: <T = any>(url: string, data?: any, config?: Partial<RequestConfig>) =>
     instance.post<any, T>(url, data, {
       headers: {
         'Content-Type': 'application/json',
@@ -70,13 +69,15 @@ export const request = {
       ...config,
     }),
 
-  form: <T = any>(url: string, data?: any, config?: RequestConfig) =>
-    instance.post<any, T>(url, qs.stringify(data, { arrayFormat: 'repeat' }), {
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
-      },
+  // POST with query params (for mutation endpoints that use query parameters)
+  postParams: <T = any>(url: string, params?: any, config?: Partial<RequestConfig>) =>
+    instance.post<any, T>(url, null, {
+      params,
+      paramsSerializer: (params) =>
+        qs.stringify(params, { arrayFormat: 'repeat' }),
       ...config,
     }),
+
 }
 
 export default request

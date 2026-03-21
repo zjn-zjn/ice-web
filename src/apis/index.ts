@@ -1,96 +1,130 @@
 import request from '../utils/request'
-import type { DetailData, FolderListResult, FolderTreeNode, BatchItem, ChildrenItem } from '../index.d'
+import type { DetailData, FolderListResult, FolderTreeNode, BatchItem, ChildrenItem, ApiResponse, AppItem, ConfigItem, HistoryItem } from '../types'
 
 const API_PREFIX = '/ice-server'
 
-export interface ApiResponse<T = any> {
-  ret: number
-  data: T
-  msg?: string
-}
+export type { ApiResponse }
 
 export interface EditConfResponse {
   nodeId: number
   nodes?: ChildrenItem[]
 }
 
-interface AppItem {
-  id: number
-  name: string
-  info: string
-}
-
 interface ConfigListResponse {
-  list: any[]
+  list: ConfigItem[]
   total: number
 }
 
-interface HistoryItem {
-  id: number
+interface ConfListParams {
+  app?: number
+  pageNum?: number
+  pageSize?: number
+  name?: string
+}
+
+interface EditConfParams {
   app: number
   iceId: number
-  reason?: string
-  operator: string
-  createAt: string
+  editType: number
+  selectId?: number
+  parentId?: number
+  nextId?: number
+  index?: number
+  nodeType?: number
+  relationType?: number
+  confName?: string
+  confField?: string
+  name?: string
+  multiplexIds?: string
+  moveTo?: number
+  moveToParentId?: number
+  moveToNextId?: number
+  lane?: string
+  inverse?: boolean
+  timeType?: number
+  start?: number
+  end?: number
+}
+
+interface IceCreateParams {
+  app: number
+  name?: string
+  scenes?: string
+  debug?: number
+  id?: number
+  path?: string
+}
+
+interface IceEditParams {
+  app: number
+  id: number
+  name?: string
+  scenes?: string
+  debug?: number
+}
+
+interface ReleaseParams {
+  app: number
+  iceId: number
 }
 
 const apis = {
-  appList: () => 
-    request.get<{ list: AppItem[] }>(`${API_PREFIX}/app/list`),
-  
+  appList: (params?: { pageNum?: number; pageSize?: number; name?: string; app?: number }) =>
+    request.get<{ list: AppItem[]; total: number; pageNum: number; pageSize: number }>(`${API_PREFIX}/app/list`, params),
+
   appEdit: (data: Partial<AppItem>) =>
     request.post<ApiResponse>(`${API_PREFIX}/app/edit`, data),
 
-  confList: (params?: any) =>
+  confList: (params?: ConfListParams) =>
     request.get<ConfigListResponse>(`${API_PREFIX}/base/list`, params),
-  
+
   details: (params: { app: number, iceId: number, address?: string, lane?: string }) =>
-    request.get<DetailData>(`${API_PREFIX}/conf/detail`, params, { hideErrorMessage: true } as any),
+    request.get<DetailData>(`${API_PREFIX}/conf/detail`, params, { hideErrorMessage: true }),
 
   nodeMeta: (params: { app: string | number, lane?: string, address?: string }) =>
     request.get<any>(`${API_PREFIX}/conf/node-meta`, params),
-  
-  editConf: (data: any) =>
+
+  editConf: (data: EditConfParams) =>
     request.post<EditConfResponse>(`${API_PREFIX}/conf/edit`, data),
-  
+
   getLanes: (params: { app: string | number }) =>
     request.get<string[]>(`${API_PREFIX}/conf/lane/list`, params),
-  
+
   pushConf: (params: { iceId: string | number, app: string | number, reason?: string }) =>
-    request.get(`${API_PREFIX}/base/backup`, params),
-  
+    request.postParams(`${API_PREFIX}/base/backup`, params),
+
   pushHistory: (params: { app: string | number, iceId: string | number }) =>
     request.get<{ list: HistoryItem[] }>(`${API_PREFIX}/base/backup/history`, params),
-  
+
   rollback: (params: { app: string | number, pushId: number }) =>
-    request.get(`${API_PREFIX}/base/rollback`, params),
-  
+    request.postParams(`${API_PREFIX}/base/rollback`, params),
+
   deleteHistory: (params: { app: string | number, pushId: number }) =>
-    request.get(`${API_PREFIX}/base/backup/delete`, params),
-  
-  iceCreate: (data: any) =>
+    request.postParams(`${API_PREFIX}/base/backup/delete`, params),
+
+  iceCreate: (data: IceCreateParams) =>
     request.post<ApiResponse>(`${API_PREFIX}/base/create`, data),
 
-  iceEdit: (data: any) =>
+  iceEdit: (data: IceEditParams) =>
     request.post<ApiResponse>(`${API_PREFIX}/base/edit`, data),
 
   iceDelete: (params: { app: number, id: number }) =>
-    request.get(`${API_PREFIX}/base/delete`, params),
-  
+    request.postParams(`${API_PREFIX}/base/delete`, params),
+
   iceExport: (params: { iceId: string | number, app: string | number, pushId?: number }) =>
     request.get<string>(`${API_PREFIX}/base/export`, params),
 
   iceExportBatch: (params: { iceIds: (string | number)[], app: string | number }) =>
     request.get<string>(`${API_PREFIX}/base/export/batch`, params),
-  
-  iceImport: (data: any) =>
-    request.post<ApiResponse>(`${API_PREFIX}/base/import`, data),
-  
-  release: (params?: any) =>
-    request.get<ApiResponse>(`${API_PREFIX}/conf/release`, params),
 
-  updateClean: (params?: any) =>
-    request.get<ApiResponse>(`${API_PREFIX}/conf/update_clean`, params),
+  iceImport: (json: string) =>
+    request.post<ApiResponse>(`${API_PREFIX}/base/import`, { json }),
+
+  release: (params: ReleaseParams) =>
+    request.postParams<ApiResponse>(`${API_PREFIX}/conf/release`, params),
+
+  updateClean: (params: ReleaseParams) =>
+    request.postParams<ApiResponse>(`${API_PREFIX}/conf/update_clean`, params),
 
   // Folder APIs
   folderCreate: (data: { app: number; path: string; name: string }) =>
@@ -119,7 +153,14 @@ const apis = {
     request.post(`${API_PREFIX}/base/batch/delete`, data),
 
   exportFolder: (params: { app: number; path: string }) =>
-    request.get<string>(`${API_PREFIX}/base/export/folder`, params)
+    request.get<string>(`${API_PREFIX}/base/export/folder`, params),
+
+  // Mock APIs
+  mockExecute: (data: { app: number; iceId?: number; confId?: number; scene?: string; ts?: number; roam?: Record<string, any>; target: string }) =>
+    request.post<any>(`${API_PREFIX}/mock/execute`, data, { timeout: 60000 }),
+
+  mockSchema: (params: { app: number; iceId?: number; confId?: number; lane?: string; address?: string }) =>
+    request.get<any>(`${API_PREFIX}/mock/schema`, params),
 }
 
 export default apis

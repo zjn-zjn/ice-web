@@ -2,7 +2,7 @@ import { Suspense, lazy } from 'react'
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { Spin } from 'antd'
 
-const MainLayout = lazy(() => import('../packages/main-layout'))
+const MainLayout = lazy(() => import('../pages/layout'))
 
 const LazyLoading = () => (
   <div style={{ padding: 24, textAlign: 'center' }}>

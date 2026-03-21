@@ -5,42 +5,175 @@ export interface ApiResponse<T = any> {
   msg?: string
 }
 
-// App相关类型
+/**
+ * AppItem
+ */
 export interface AppItem {
+  createAt: string
   id: number
-  name: string
   info: string
+  name: string
+  status: boolean
+  updateAt: string
 }
 
-// 配置相关类型
+/**
+ * ConfigItem
+ */
 export interface ConfigItem {
   id: number
   name: string
-  info: string
-  createTime?: string
-  updateTime?: string
-  status?: number
+  app: number
+  scenes: string
+  status: number
+  confId: number
+  timeType: number
+  debug: number
+  createAt: string
+  updateAt: string
 }
 
-// 树节点类型
-export interface TreeNode {
-  id: number
+/**
+ * DetailData
+ */
+export interface ClientInfo {
+  address: string
+}
+
+export interface ClientRegistryInfo {
+  mainClients?: ClientInfo[]
+  laneClients?: Record<string, ClientInfo[]>
+}
+
+export interface LeafClassInfo {
+  clazz: string
   name: string
-  children?: TreeNode[]
+  desc?: string
+  type: number
+  order: number
+  iceFields?: FieldItem[]
+  hideFields?: FieldItem[]
+}
+
+export interface DetailData {
+  app: number
+  confId: number
+  iceId: number
+  name?: string
+  root: ChildrenItem
+  updateCount?: number
+  clientRegistry?: ClientRegistryInfo
+  leafClassMap?: Record<number, LeafClassInfo[]>
+}
+
+/**
+ * ChildrenItem
+ */
+export interface ChildrenItem {
+  showConf: ShowConf
+  children?: ChildrenItem[]
   parentId?: number
-  type?: number
-  [key: string]: any
+  nextId?: number
+  index: number
+  sonIds?: string
+  timeType?: number
+  start?: number
+  end?: number
+  forwardId?: number
+  forward?: ChildrenItem
+  // 非接口返回字段
+  isForward?: boolean
+  isRoot?: boolean
+  disabled?: boolean
+  //组件字段
+  dragOver?: boolean
 }
 
-// 模态框状态类型
-export interface ModalState {
-  visible: boolean
-  [key: string]: any
+/**
+ * ShowConf
+ */
+export interface ShowConf {
+  uniqueKey: string
+  inverse: boolean
+  labelName: string
+  nodeId: number
+  nodeType: number
+  nodeName?: string
+  confName?: string
+  confField?: string
+  haveMeta?: boolean
+  nodeInfo?: NodeInfo
+  updating?: boolean
+  classRegistered?: boolean
 }
 
-// 分页参数类型
-export interface PaginationParams {
-  current?: number
-  pageSize?: number
-  total?: number
+/**
+ * NodeInfo
+ */
+export interface NodeInfo {
+  clazz: string
+  desc: string
+  name: string
+  type: string
+  iceFields?: FieldItem[]
+  hideFields?: FieldItem[]
+}
+
+/**
+ * FieldItem
+ */
+export interface FieldItem {
+  field: string
+  type: string
+  name?: string
+  desc?: string
+  value: string
+  valueNull: boolean
+}
+
+/**
+ * Folder types
+ */
+export interface FolderItem {
+  type: 'folder' | 'base'
+  name: string
+  id?: number
+  confId?: number
+  scenes?: string
+  debug?: number
+  childCount?: number
+}
+
+export interface FolderListResult {
+  list: FolderItem[]
+  total: number
+  pageNum: number
+  pageSize: number
+  path: string
+  actualPath: string
+}
+
+export interface FolderTreeNode {
+  name: string
+  path: string
+  children: FolderTreeNode[]
+}
+
+export interface BatchItem {
+  type: 'folder' | 'base'
+  name?: string
+  id?: number
+  path?: string
+}
+
+/**
+ * HistoryItem
+ */
+export interface HistoryItem {
+  id: number
+  app: number
+  iceId: number
+  reason?: string
+  operator: string
+  createAt: string
 }

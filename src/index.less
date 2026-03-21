@@ -1,11 +1,53 @@
-.ant-layout {
-  background: #fff;
-  touch-action: none;
-  overscroll-behavior: none;
+:root {
+  --color-bg-container: #ffffff;
+  --color-bg-layout: #f5f5f5;
+  --color-bg-hover: rgba(0, 0, 0, 0.04);
+  --color-bg-active: #e6f4ff;
+  --color-text: rgba(0, 0, 0, 0.88);
+  --color-text-secondary: rgba(0, 0, 0, 0.65);
+  --color-text-tertiary: rgba(0, 0, 0, 0.45);
+  --color-text-quaternary: rgba(0, 0, 0, 0.25);
+
+  --color-border: #d9d9d9;
+  --color-border-secondary: #f0f0f0;
+  --color-fill-secondary: rgba(0, 0, 0, 0.06);
+
+  --color-primary: #1677ff;
+  --color-primary-bg: #e6f4ff;
+  --color-warning: #faad14;
+  --color-error: #ff4d4f;
+
+  --color-shadow: rgba(0, 0, 0, 0.08);
+}
+
+html[data-theme='dark'] {
+  --color-bg-container: #141414;
+  --color-bg-layout: #1f1f1f;
+  --color-bg-hover: rgba(255, 255, 255, 0.08);
+  --color-bg-active: #111d2c;
+  --color-text: rgba(255, 255, 255, 0.85);
+  --color-text-secondary: rgba(255, 255, 255, 0.65);
+  --color-text-tertiary: rgba(255, 255, 255, 0.45);
+  --color-text-quaternary: rgba(255, 255, 255, 0.25);
+
+  --color-border: #434343;
+  --color-border-secondary: #303030;
+  --color-fill-secondary: rgba(255, 255, 255, 0.06);
+
+  --color-primary: #1668dc;
+  --color-primary-bg: #111d2c;
+  --color-warning: #d89614;
+  --color-error: #d32029;
+
+  --color-shadow: rgba(0, 0, 0, 0.45);
 }
 
 /* 禁用所有可能的滑动手势 */
 html, body {
   overscroll-behavior-x: none;
   touch-action: pan-y pinch-zoom;
+}
+
+html[data-theme='dark'] body {
+  background: #141414;
 }

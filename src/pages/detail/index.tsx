@@ -453,7 +453,7 @@ const Detail = ({ onBaseName }: { onBaseName?: (name?: string) => void }) => {
           address={address}
           selectorValue={selectorValue}
           onProcessResult={setMockProcessNodes}
-          onFallback={() => { if (selectorValue.length > 1) setSelectorValue(selectorValue.slice(0, -1)) }}
+          onFallback={() => { if (selectorValue.length > 1) persistSelector(selectorValue.slice(0, -1)) }}
         />
       </div>
       <NodeFormModal

@@ -366,8 +366,8 @@ const MockModal = ({ open, onClose, app, iceId, confId, nodeName, lane, address,
             <div>
               <div style={{ color: token.colorTextTertiary, marginBottom: 2, fontSize: 12 }}>
                 Roam:
-                {result.ts != null && <span style={{ display: 'inline-block', marginLeft: 8, padding: '0 6px', border: `1px solid ${token.colorBorderSecondary}`, borderRadius: token.borderRadiusSM, fontSize: 11, color: token.colorTextSecondary }}>ts: {result.ts}</span>}
-                {result.trace && <span style={{ display: 'inline-block', marginLeft: 6, padding: '0 6px', border: `1px solid ${token.colorBorderSecondary}`, borderRadius: token.borderRadiusSM, fontSize: 11, color: token.colorTextSecondary }}>trace: {result.trace}</span>}
+                {result.ts != null && <span style={{ display: 'inline-block', userSelect: 'all', marginLeft: 8, padding: '0 6px', border: `1px solid ${token.colorBorderSecondary}`, borderRadius: token.borderRadiusSM, fontSize: 11, color: token.colorTextSecondary }}>ts: {result.ts}</span>}
+                {result.trace && <span style={{ display: 'inline-block', userSelect: 'all', marginLeft: 6, padding: '0 6px', border: `1px solid ${token.colorBorderSecondary}`, borderRadius: token.borderRadiusSM, fontSize: 11, color: token.colorTextSecondary }}>trace: {result.trace}</span>}
               </div>
               <Input.TextArea
                 rows={8}

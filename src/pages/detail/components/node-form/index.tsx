@@ -292,7 +292,7 @@ const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, lane, onSucces
 
   const title = isCreate ? (mode === 'add-front' ? '添加前置节点' : '添加子节点') : `编辑节点 #${selectedNode.showConf?.nodeId || ''}`
   const canSave = isCreate
-    ? !!activeType && (!isLeaf || !!confName)
+    ? activeType !== undefined && (!isLeaf || !!confName)
     : hasChanges && (!isLeaf || !typeChanged || !!confName)
   const isNotRoot = !selectedNode.isRoot && (selectedNode.parentId != null || selectedNode.nextId != null)
 

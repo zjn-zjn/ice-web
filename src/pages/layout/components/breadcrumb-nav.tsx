@@ -129,6 +129,7 @@ const BreadcrumbNav = ({ appId, folderPath, baseId, baseName, onBaseNameChange }
               />
             }
             trigger="click"
+            destroyTooltipOnHide
             open={activeFolderLevel === item.level}
             onOpenChange={(open) => handleFolderOpenChange(open, item.level)}
             placement="bottomLeft"
@@ -156,6 +157,7 @@ const BreadcrumbNav = ({ appId, folderPath, baseId, baseName, onBaseNameChange }
             />
           }
           trigger="click"
+          destroyTooltipOnHide
           open={activeFolderLevel === -1}
           onOpenChange={(open) => handleFolderOpenChange(open, -1)}
           placement="bottomLeft"

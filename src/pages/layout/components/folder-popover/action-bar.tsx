@@ -1,6 +1,7 @@
 import { Input, Button, Space, Pagination } from 'antd'
 import { PlusOutlined, CheckSquareOutlined, CloseOutlined } from '@ant-design/icons'
 import { useState } from 'react'
+import { useServerConfig } from '../../../../context/ServerConfigContext'
 
 interface Props {
   selectMode: boolean
@@ -23,6 +24,7 @@ const ActionBar = ({
   onBatchMove, onBatchExport, onBatchDelete, onExitSelect, onEnterSelect,
   onCreateFolder, onCreateBase, onPageChange
 }: Props) => {
+  const { controlled } = useServerConfig()
   const [showCreateFolder, setShowCreateFolder] = useState(false)
   const [createFolderName, setCreateFolderName] = useState('')
 
@@ -60,7 +62,7 @@ const ActionBar = ({
         ) : (
           <Space size="small">
             <Button size="small" icon={<PlusOutlined />} onClick={() => setShowCreateFolder(true)}>文件夹</Button>
-            <Button size="small" icon={<PlusOutlined />} onClick={onCreateBase}>Rule</Button>
+            {!controlled && <Button size="small" icon={<PlusOutlined />} onClick={onCreateBase}>Rule</Button>}
             <Button size="small" icon={<CheckSquareOutlined />} onClick={onEnterSelect}>选择</Button>
           </Space>
         )}

@@ -68,7 +68,23 @@ interface ReleaseParams {
   iceId: number
 }
 
+interface PublishTarget {
+  name: string
+  url: string
+}
+
+interface ConfigInfoResponse {
+  mode: string
+  publishTargets?: PublishTarget[]
+}
+
 const apis = {
+  configInfo: () =>
+    request.get<ConfigInfoResponse>(`${API_PREFIX}/config/info`),
+
+  publish: (data: { json: string; target: string }) =>
+    request.post<ApiResponse>(`${API_PREFIX}/base/publish`, data),
+
   appList: (params?: { pageNum?: number; pageSize?: number; name?: string; app?: number }) =>
     request.get<{ list: AppItem[]; total: number; pageNum: number; pageSize: number }>(`${API_PREFIX}/app/list`, params),
 

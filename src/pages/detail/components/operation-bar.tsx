@@ -43,7 +43,7 @@ const OperationBar = ({
       <Button onClick={onExport}>导出</Button>
       <Badge count={updateCount} size="small" offset={[-4, 2]}>
         <Button onClick={onRelease} disabled={!updateCount}
-          className={updateCount ? 'release-btn-active' : undefined}>发布</Button>
+          className={updateCount ? 'release-btn-active' : undefined}>应用</Button>
       </Badge>
       <Button onClick={onClean} disabled={!updateCount}>清除</Button>
       <Button onClick={onMock} disabled={!hasClients}>Mock</Button>

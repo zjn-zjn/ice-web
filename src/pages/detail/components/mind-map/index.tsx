@@ -9,6 +9,7 @@ import Drag from 'simple-mind-map/src/plugins/Drag.js';
 import { RelationNodeMap } from '../../types';
 import type { LeafClassInfo } from '../../../../types';
 import { useTheme } from '../../../../theme/ThemeContext';
+import { useServerConfig } from '../../../../context/ServerConfigContext';
 import type { MockProcessNode } from '../mock-modal';
 
 interface Props {
@@ -139,6 +140,7 @@ const MindMapComponent = forwardRef(({
 }: Props, ref) => {
   const { modal, message } = App.useApp();
   const { isDark } = useTheme();
+  const { controlled } = useServerConfig();
   const mindMapRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [toolbarPos, setToolbarPos] = useState<{ x: number; y: number } | null>(null);
@@ -385,14 +387,14 @@ const MindMapComponent = forwardRef(({
               />
             </Tooltip>
             {isRelation && (
-              <Tooltip title="加子节点" mouseEnterDelay={0.3}>
+              <Tooltip title={controlled ? "引用子节点" : "加子节点"} mouseEnterDelay={0.3}>
                 <Button type="text" size="small" icon={<PlusOutlined />}
                   onClick={() => { setToolbarPos(null); onAddChild(selectedNode); }}
                 />
               </Tooltip>
             )}
             {!hasForward && (
-              <Tooltip title="加前置" mouseEnterDelay={0.3}>
+              <Tooltip title={controlled ? "引用前置" : "加前置"} mouseEnterDelay={0.3}>
                 <Button type="text" size="small" icon={<NodeIndexOutlined />}
                   onClick={() => { setToolbarPos(null); onAddFront(selectedNode); }}
                 />

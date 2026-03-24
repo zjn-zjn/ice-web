@@ -4,6 +4,7 @@ import { ConfigProvider, App as AntdApp, theme } from 'antd'
 import zhCN from 'antd/locale/zh_CN'
 import AppRouter from './router'
 import { ThemeProvider, useTheme } from './theme/ThemeContext'
+import { ServerConfigProvider } from './context/ServerConfigContext'
 import { setMessageHandler } from './utils/request'
 import 'antd/dist/reset.css'
 import './index.less'
@@ -38,7 +39,9 @@ const ThemedApp = () => {
 const App = () => {
   return (
     <ThemeProvider>
-      <ThemedApp />
+      <ServerConfigProvider>
+        <ThemedApp />
+      </ServerConfigProvider>
     </ThemeProvider>
   )
 }

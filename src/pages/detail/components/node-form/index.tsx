@@ -9,6 +9,7 @@ import TextArea from 'antd/es/input/TextArea'
 import type { FieldItem as IFieldItem, LeafClassInfo } from '../../../../types'
 import { RelationNodeMap } from '../../types'
 import type { TreeItem } from '../../types'
+import { useServerConfig } from '../../../../context/ServerConfigContext'
 import './index.less'
 
 const isStringType = (t: string) => ['java.lang.String', 'string', 'str'].includes(t)
@@ -85,6 +86,7 @@ const getClasses = (map: Record<string, LeafClassInfo[]> | undefined, type: numb
 
 const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, lane, onSuccess, leafClassMap, mode = 'edit' }: NodeFormProps) => {
   const { message } = App.useApp()
+  const { controlled } = useServerConfig()
   const [form] = Form.useForm()
   const [loading, setLoading] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
@@ -290,11 +292,27 @@ const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, lane, onSucces
 
   if (!selectedNode) return null
 
-  const title = isCreate ? (mode === 'add-front' ? '添加前置节点' : '添加子节点') : `编辑节点 #${selectedNode.showConf?.nodeId || ''}`
+  const title = isCreate
+    ? (controlled ? '引用节点' : (mode === 'add-front' ? '添加前置节点' : '添加子节点'))
+    : `编辑节点 #${selectedNode.showConf?.nodeId || ''}`
   const canSave = isCreate
     ? activeType !== undefined && (!isLeaf || !!confName)
     : hasChanges && (!isLeaf || !typeChanged || !!confName)
   const isNotRoot = !selectedNode.isRoot && (selectedNode.parentId != null || selectedNode.nextId != null)
+
+  if (isCreate && controlled) {
+    return (
+      <Modal title={title} open={open} onCancel={onClose} width={480} destroyOnClose centered footer={null}>
+        <div style={{ padding: '16px 0' }}>
+          <Space.Compact style={{ width: '100%' }}>
+            <Input placeholder="引用已有节点 ID（逗号分隔）" value={nodeIdInput}
+              onChange={e => setNodeIdInput(e.target.value)} onPressEnter={handleLink} />
+            <Button type="primary" loading={loading} onClick={handleLink} disabled={!nodeIdInput.trim()}>引用</Button>
+          </Space.Compact>
+        </div>
+      </Modal>
+    )
+  }
 
   return (
     <Modal title={title} open={open} onCancel={onClose} width={820} destroyOnClose centered

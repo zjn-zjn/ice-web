@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRequest } from 'ahooks'
-import { Popover } from 'antd'
+import { Popover, Tag, Tooltip } from 'antd'
 import { DownOutlined, GithubOutlined, SunOutlined, MoonOutlined } from '@ant-design/icons'
+import { useServerConfig } from '../../../context/ServerConfigContext'
 import { useNavigate } from 'react-router-dom'
 import AppSelector from './app-selector'
 import FolderPopover from './folder-popover'
@@ -20,6 +21,7 @@ interface Props {
 const BreadcrumbNav = ({ appId, folderPath, baseId, baseName, onBaseNameChange }: Props) => {
   const navigate = useNavigate()
   const { isDark, toggleTheme } = useTheme()
+  const { controlled } = useServerConfig()
   const [appPopoverOpen, setAppPopoverOpen] = useState(false)
   const [activeFolderLevel, setActiveFolderLevel] = useState<number | null>(null)
   const timersRef = useRef<ReturnType<typeof setTimeout>[]>([])
@@ -171,6 +173,11 @@ const BreadcrumbNav = ({ appId, folderPath, baseId, baseName, onBaseNameChange }
 
       {/* Right: theme toggle + logo + GitHub */}
       <div className="breadcrumb-right">
+        {controlled && (
+          <Tooltip title="禁止通过 UI 新建 Rule 和节点，仅允许导入和引用已有节点">
+            <Tag color="orange" style={{ margin: 0, cursor: 'help' }}>受控模式</Tag>
+          </Tooltip>
+        )}
         <span className="breadcrumb-link" onClick={toggleTheme} style={{ cursor: 'pointer' }}>
           {isDark ? <SunOutlined style={{ fontSize: 16 }} /> : <MoonOutlined style={{ fontSize: 16 }} />}
         </span>

@@ -7,7 +7,7 @@ const baseURL = import.meta.env.DEV ? (import.meta.env.VITE_API_BASE_URL || '') 
 // 创建 axios 实例
 const instance = axios.create({
   baseURL,
-  timeout: 10000,
+  timeout: 120000,
   withCredentials: false,
 })
 

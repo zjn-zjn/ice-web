@@ -402,7 +402,7 @@ const Detail = ({ onBaseName }: { onBaseName?: (name?: string) => void }) => {
     })
   }
 
-  const release = () => confirmAndApply('确认发布所有变更吗？', () => apis.release({ app, iceId }), '发布成功')
+  const release = () => confirmAndApply('确认应用所有变更吗？', () => apis.release({ app, iceId }), '应用成功')
   const clean = () => confirmAndApply('确认清除所有变更吗？', () => apis.updateClean({ app, iceId }), '已清除')
 
   return (

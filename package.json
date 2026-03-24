@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && find dist -type f \\( -name '*.js' -o -name '*.css' -o -name '*.html' -o -name '*.svg' \\) -exec brotli -f -q 11 {} \\;",
     "preview": "vite preview"
   },
   "dependencies": {

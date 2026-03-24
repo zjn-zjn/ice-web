@@ -9,6 +9,7 @@ interface Props {
   pageNum: number
   pageSize: number
   onBatchMove: () => void
+  onBatchExport: () => void
   onBatchDelete: () => void
   onExitSelect: () => void
   onEnterSelect: () => void
@@ -19,7 +20,7 @@ interface Props {
 
 const ActionBar = ({
   selectMode, selectedCount, total, pageNum, pageSize,
-  onBatchMove, onBatchDelete, onExitSelect, onEnterSelect,
+  onBatchMove, onBatchExport, onBatchDelete, onExitSelect, onEnterSelect,
   onCreateFolder, onCreateBase, onPageChange
 }: Props) => {
   const [showCreateFolder, setShowCreateFolder] = useState(false)
@@ -38,6 +39,7 @@ const ActionBar = ({
         {selectMode ? (
           <Space size="small">
             <Button size="small" onClick={onBatchMove} disabled={!selectedCount}>移动</Button>
+            <Button size="small" onClick={onBatchExport} disabled={!selectedCount}>导出({selectedCount})</Button>
             <Button size="small" danger onClick={onBatchDelete} disabled={!selectedCount}>删除({selectedCount})</Button>
             <Button size="small" icon={<CloseOutlined />} onClick={onExitSelect} />
           </Space>

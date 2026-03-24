@@ -38,7 +38,7 @@ const FolderPopover = ({ appId, path, currentBaseId, onClose, onNavigateFolder, 
   const [moveItems, setMoveItems] = useState<FolderItem[]>([])
   const [createBaseOpen, setCreateBaseOpen] = useState(false)
   const [editItem, setEditItem] = useState<EditData | null>(null)
-  const [exportObj, setExportObj] = useState<{ visible: boolean; iceId?: number | string; pushId?: number }>({ visible: false })
+  const [exportObj, setExportObj] = useState<{ visible: boolean; iceId?: number | string; iceIds?: (number | string)[]; folderPath?: string; folderPaths?: string[]; pushId?: number }>({ visible: false })
   const [backupObj, setBackupObj] = useState<{ visible: boolean; iceId: string | number }>({ visible: false, iceId: '' })
   const [historyObj, setHistoryObj] = useState<{ visible: boolean; iceId: string | number; name: string }>({ visible: false, iceId: '', name: '' })
   const { data, run: fetchList, loading } = useRequest(
@@ -172,6 +172,7 @@ const FolderPopover = ({ appId, path, currentBaseId, onClose, onNavigateFolder, 
       const folderPath = buildPath(path, item.name)
       return [
         { key: 'rename', label: '重命名', onClick: () => setRenamingItem({ path: folderPath, newName: item.name }) },
+        { key: 'export', label: '导出', onClick: () => setExportObj({ visible: true, folderPath }) },
         { key: 'move', label: '移动', onClick: () => openMovePicker([item]) },
         { key: 'delete', label: '删除', danger: true, onClick: () => handleDelete(item) }
       ]
@@ -184,6 +185,15 @@ const FolderPopover = ({ appId, path, currentBaseId, onClose, onNavigateFolder, 
       { key: 'move', label: '移动', onClick: () => openMovePicker([item]) },
       { key: 'delete', label: '删除', danger: true, onClick: () => handleDelete(item) }
     ]
+  }
+
+  const handleBatchExport = () => {
+    const selected = list.filter(item => selectedRowKeys.includes(getItemKey(item)))
+    const baseIds = selected.filter(i => i.type === 'base' && i.id !== undefined).map(i => i.id!)
+    const folderPaths = selected.filter(i => i.type === 'folder').map(i => buildPath(path, i.name))
+    if (baseIds.length || folderPaths.length) {
+      setExportObj({ visible: true, iceIds: baseIds.length ? baseIds : undefined, folderPaths: folderPaths.length ? folderPaths : undefined })
+    }
   }
 
   const handleBatchMove = () => {
@@ -228,6 +238,7 @@ const FolderPopover = ({ appId, path, currentBaseId, onClose, onNavigateFolder, 
         pageNum={pageNum}
         pageSize={pageSize}
         onBatchMove={handleBatchMove}
+        onBatchExport={handleBatchExport}
         onBatchDelete={handleBatchDelete}
         onExitSelect={() => { setSelectMode(false); setSelectedRowKeys([]) }}
         onEnterSelect={() => setSelectMode(true)}
@@ -287,6 +298,9 @@ const FolderPopover = ({ appId, path, currentBaseId, onClose, onNavigateFolder, 
       <ExportModal
         open={exportObj.visible}
         iceId={exportObj.iceId}
+        iceIds={exportObj.iceIds}
+        folderPath={exportObj.folderPath}
+        folderPaths={exportObj.folderPaths}
         pushId={exportObj.pushId}
         onCancel={() => setExportObj({ visible: false })}
         onOk={() => setExportObj({ visible: false })}

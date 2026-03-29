@@ -11,6 +11,24 @@ import type { ChangeItem } from '../../types'
 import NodeDiff from './components/node-diff'
 import TreeDiffModal from './components/tree-diff-modal'
 
+const nodeTypeNames: Record<number, string> = {
+  0: 'NONE', 1: 'AND', 2: 'TRUE', 3: 'ALL', 4: 'ANY',
+  5: 'LEAF_FLOW', 6: 'LEAF_RESULT', 7: 'LEAF_NONE',
+  8: 'P_NONE', 9: 'P_AND', 10: 'P_TRUE', 11: 'P_ALL', 12: 'P_ANY',
+}
+
+const changeLabel = (c: ChangeItem): string => {
+  const u = c.update
+  let label = `#${c.confId}`
+  if (u.name) label += `-${u.name}`
+  if (u.confName) {
+    label += ` (${u.confName.substring(u.confName.lastIndexOf('.') + 1)})`
+  } else if (nodeTypeNames[u.type]) {
+    label += ` (${nodeTypeNames[u.type]})`
+  }
+  return label
+}
+
 // Inline component for confirm dialog content that loads changes
 const ConfirmChangesContent = ({ app, iceId, onViewNode }: {
   app: number; iceId: number; onViewNode: (confId: number) => void
@@ -33,9 +51,7 @@ const ConfirmChangesContent = ({ app, iceId, onViewNode }: {
         <div style={{ maxHeight: 300, overflowY: 'auto' }}>
           {changes.map(c => (
             <div key={c.confId} style={{ padding: '4px 0', fontSize: 13 }}>
-              #{c.confId}
-              {c.update.name ? `-${c.update.name}` : ''}
-              {c.update.confName ? ` (${c.update.confName.substring(c.update.confName.lastIndexOf('.') + 1)})` : ''}
+              {changeLabel(c)}
               {' '}
               <Tag color="blue" style={{ marginLeft: 4, cursor: 'pointer' }} onClick={() => onViewNode(c.confId)}>
                 查看

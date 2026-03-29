@@ -1,4 +1,4 @@
-import { Tabs } from 'antd'
+import { Tabs, theme } from 'antd'
 import { useMemo } from 'react'
 import type { IceConfRaw } from '../../../types'
 
@@ -66,6 +66,7 @@ const diffLines = (oldText: string, newText: string): { old: { text: string; typ
 }
 
 const PropertyTable = ({ active, update }: Props) => {
+  const { token } = theme.useToken()
   const isNew = !active
 
   const rows: { label: string; oldVal: string; newVal: string }[] = useMemo(() => {
@@ -127,15 +128,16 @@ const PropertyTable = ({ active, update }: Props) => {
     return entries
   }, [active?.confField, update.confField])
 
-  const changedColor = 'var(--color-warning-bg, #fff7e6)'
-  const addedColor = 'var(--color-success-bg, #f6ffed)'
-  const removedColor = 'var(--color-error-bg, #fff2f0)'
+  const changedColor = token.colorWarningBg
+  const addedColor = token.colorSuccessBg
+  const removedColor = token.colorErrorBg
+  const borderColor = token.colorBorderSecondary
 
   return (
     <div>
       <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
         <thead>
-          <tr style={{ borderBottom: '2px solid var(--color-border-secondary, #f0f0f0)' }}>
+          <tr style={{ borderBottom: `2px solid ${borderColor}` }}>
             <th style={{ textAlign: 'left', padding: '6px 8px', width: 100 }}>属性</th>
             <th style={{ textAlign: 'left', padding: '6px 8px' }}>{isNew ? '' : '旧值'}</th>
             <th style={{ textAlign: 'left', padding: '6px 8px' }}>新值</th>
@@ -144,9 +146,9 @@ const PropertyTable = ({ active, update }: Props) => {
         <tbody>
           {rows.filter(r => isNew || r.oldVal !== r.newVal).map(r => {
             return (
-              <tr key={r.label} style={{ background: isNew ? undefined : changedColor, borderBottom: '1px solid var(--color-border-secondary, #f0f0f0)' }}>
+              <tr key={r.label} style={{ background: isNew ? undefined : changedColor, borderBottom: `1px solid ${borderColor}` }}>
                 <td style={{ padding: '4px 8px', fontWeight: 500 }}>{r.label}</td>
-                <td style={{ padding: '4px 8px', color: isNew ? 'var(--color-text-quaternary)' : undefined }}>{r.oldVal}</td>
+                <td style={{ padding: '4px 8px', color: isNew ? token.colorTextQuaternary : undefined }}>{r.oldVal}</td>
                 <td style={{ padding: '4px 8px' }}>{r.newVal}</td>
               </tr>
             )
@@ -159,7 +161,7 @@ const PropertyTable = ({ active, update }: Props) => {
           <div style={{ fontWeight: 500, marginBottom: 4, fontSize: 13 }}>confField</div>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 13 }}>
             <thead>
-              <tr style={{ borderBottom: '2px solid var(--color-border-secondary, #f0f0f0)' }}>
+              <tr style={{ borderBottom: `2px solid ${borderColor}` }}>
                 <th style={{ textAlign: 'left', padding: '4px 8px', width: 120 }}>字段</th>
                 <th style={{ textAlign: 'left', padding: '4px 8px' }}>{isNew ? '' : '旧值'}</th>
                 <th style={{ textAlign: 'left', padding: '4px 8px' }}>新值</th>
@@ -169,7 +171,7 @@ const PropertyTable = ({ active, update }: Props) => {
               {fieldDiff.filter(e => isNew || e.status !== 'same').map(e => (
                 <tr key={e.key} style={{
                   background: e.status === 'added' ? addedColor : e.status === 'removed' ? removedColor : e.status === 'modified' ? changedColor : undefined,
-                  borderBottom: '1px solid var(--color-border-secondary, #f0f0f0)',
+                  borderBottom: `1px solid ${borderColor}`,
                 }}>
                   <td style={{ padding: '4px 8px', fontFamily: 'monospace' }}>{e.key}</td>
                   <td style={{ padding: '4px 8px', fontFamily: 'monospace', textDecoration: e.status === 'removed' ? 'line-through' : undefined }}>{e.oldVal}</td>
@@ -205,6 +207,7 @@ const toDisplayObj = (conf: IceConfRaw | null): Record<string, any> => {
 }
 
 const JsonDiff = ({ active, update }: Props) => {
+  const { token } = theme.useToken()
   const { old: oldLines, new: newLines } = useMemo(() => {
     const oldText = JSON.stringify(toDisplayObj(active), null, 2)
     const newText = JSON.stringify(toDisplayObj(update), null, 2)
@@ -213,8 +216,8 @@ const JsonDiff = ({ active, update }: Props) => {
 
   const codeStyle: React.CSSProperties = {
     fontFamily: 'monospace', fontSize: 12, padding: 8, margin: 0,
-    overflow: 'auto', border: '1px solid var(--color-border-secondary, #f0f0f0)',
-    borderRadius: 4, minHeight: 60, whiteSpace: 'pre',
+    overflow: 'auto', border: `1px solid ${token.colorBorderSecondary}`,
+    borderRadius: 4, minHeight: 60, whiteSpace: 'pre', background: token.colorBgContainer,
   }
 
   return (
@@ -223,7 +226,7 @@ const JsonDiff = ({ active, update }: Props) => {
         <div style={{ fontSize: 12, fontWeight: 500, marginBottom: 4 }}>{active ? '旧值 (Active)' : '(新增节点)'}</div>
         <pre style={codeStyle}>
           {oldLines.map((l, i) => (
-            <div key={i} style={{ background: l.type === 'removed' ? 'var(--color-error-bg, #fff2f0)' : undefined }}>
+            <div key={i} style={{ background: l.type === 'removed' ? token.colorErrorBg : undefined }}>
               {l.text}
             </div>
           ))}
@@ -233,7 +236,7 @@ const JsonDiff = ({ active, update }: Props) => {
         <div style={{ fontSize: 12, fontWeight: 500, marginBottom: 4 }}>新值 (Pending)</div>
         <pre style={codeStyle}>
           {newLines.map((l, i) => (
-            <div key={i} style={{ background: l.type === 'added' ? 'var(--color-success-bg, #f6ffed)' : undefined }}>
+            <div key={i} style={{ background: l.type === 'added' ? token.colorSuccessBg : undefined }}>
               {l.text}
             </div>
           ))}

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from 'react'
-import { Modal, Spin, App } from 'antd'
+import { Modal, Spin, App, theme } from 'antd'
 import MindMap from 'simple-mind-map'
 import apis from '../../../apis'
 import type { DetailData, ChildrenItem, ChangeItem } from '../../../types'
@@ -159,6 +159,7 @@ const ReadOnlyMindMap = ({
 const TreeDiffModal = ({ open, onClose, app, iceId, lane, registeredClasses }: Props) => {
   const { isDark } = useTheme()
   const { message } = App.useApp()
+  const { token } = theme.useToken()
   const [loading, setLoading] = useState(false)
   const [activeTree, setActiveTree] = useState<ChildrenItem | null>(null)
   const [currentTree, setCurrentTree] = useState<ChildrenItem | null>(null)
@@ -229,8 +230,8 @@ const TreeDiffModal = ({ open, onClose, app, iceId, lane, registeredClasses }: P
       ) : (
         <>
           <div style={{ display: 'flex', flex: 1, minHeight: 0 }}>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: '1px solid var(--color-border-secondary, #f0f0f0)' }}>
-              <div style={{ padding: '4px 12px', fontSize: 13, fontWeight: 500, borderBottom: '1px solid var(--color-border-secondary, #f0f0f0)', background: 'var(--color-fill-quaternary, #fafafa)' }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', borderRight: `1px solid ${token.colorBorderSecondary}` }}>
+              <div style={{ padding: '4px 12px', fontSize: 13, fontWeight: 500, borderBottom: `1px solid ${token.colorBorderSecondary}`, background: token.colorFillQuaternary }}>
                 已发布 (Active)
               </div>
               <div style={{ flex: 1, minHeight: 0 }}>
@@ -238,7 +239,7 @@ const TreeDiffModal = ({ open, onClose, app, iceId, lane, registeredClasses }: P
               </div>
             </div>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
-              <div style={{ padding: '4px 12px', fontSize: 13, fontWeight: 500, borderBottom: '1px solid var(--color-border-secondary, #f0f0f0)', background: 'var(--color-fill-quaternary, #fafafa)' }}>
+              <div style={{ padding: '4px 12px', fontSize: 13, fontWeight: 500, borderBottom: `1px solid ${token.colorBorderSecondary}`, background: token.colorFillQuaternary }}>
                 当前编辑 (Pending)
               </div>
               <div style={{ flex: 1, minHeight: 0 }}>

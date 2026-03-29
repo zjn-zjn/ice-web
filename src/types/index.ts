@@ -132,6 +132,29 @@ export interface FieldItem {
 }
 
 /**
+ * ChangeItem - for conf/changes API
+ */
+export interface IceConfRaw {
+  id: number
+  name?: string
+  type: number
+  sonIds?: string
+  inverse?: boolean
+  confName?: string
+  confField?: string
+  forwardId?: number
+  timeType?: number
+  start?: number
+  end?: number
+}
+
+export interface ChangeItem {
+  confId: number
+  active: IceConfRaw | null
+  update: IceConfRaw
+}
+
+/**
  * Folder types
  */
 export interface FolderItem {

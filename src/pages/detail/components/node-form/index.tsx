@@ -111,7 +111,8 @@ const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, lane, onSucces
   }, [isLeaf, confName, activeType, leafClassMap])
 
   const nodeInfo = !isCreate ? selectedNode?.showConf?.nodeInfo : null
-  const activeFieldSrc = (confChanged && classInfo) ? classInfo : null
+  const nodeInfoHasFields = nodeInfo && (nodeInfo.iceFields?.length || nodeInfo.hideFields?.length)
+  const activeFieldSrc = (classInfo && (confChanged || !nodeInfoHasFields)) ? classInfo : null
   const fields = activeFieldSrc?.iceFields || nodeInfo?.iceFields
   const hideFields = activeFieldSrc?.hideFields || nodeInfo?.hideFields
   const hasFieldItems = isLeaf && confName && (fields?.length || hideFields?.length)
@@ -150,13 +151,13 @@ const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, lane, onSucces
 
   useEffect(() => {
     if (!open) return
-    if (isCreate) { setHasChanges(!!activeType); return }
+    if (isCreate) { setHasChanges(activeType !== undefined); return }
     const changed = JSON.stringify(form.getFieldsValue()) !== initialRef.current || typeChanged || confChanged
     setHasChanges(changed)
   }, [nodeType, confName])
 
   const onChange = () => {
-    if (isCreate) { setHasChanges(!!activeType); return }
+    if (isCreate) { setHasChanges(activeType !== undefined); return }
     const changed = JSON.stringify(form.getFieldsValue()) !== initialRef.current || typeChanged || confChanged
     setHasChanges(changed)
   }
@@ -206,7 +207,7 @@ const NodeFormModal = ({ open, onClose, selectedNode, app, iceId, lane, onSucces
       let params: any
 
       if (isCreate) {
-        if (!activeType) { message.warning('请选择节点类型'); return }
+        if (activeType === undefined) { message.warning('请选择节点类型'); return }
         editType = mode === 'add-front' ? 4 : 1
         params = {
           app: Number(app), iceId: Number(iceId), editType,

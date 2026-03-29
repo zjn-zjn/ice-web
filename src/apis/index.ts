@@ -1,5 +1,5 @@
 import request from '../utils/request'
-import type { DetailData, FolderListResult, FolderTreeNode, BatchItem, ChildrenItem, ApiResponse, AppItem, ConfigItem, HistoryItem } from '../types'
+import type { DetailData, FolderListResult, FolderTreeNode, BatchItem, ChildrenItem, ApiResponse, AppItem, ConfigItem, HistoryItem, ChangeItem } from '../types'
 
 const API_PREFIX = '/ice-server'
 
@@ -94,7 +94,7 @@ const apis = {
   confList: (params?: ConfListParams) =>
     request.get<ConfigListResponse>(`${API_PREFIX}/base/list`, params),
 
-  details: (params: { app: number, iceId: number, address?: string, lane?: string }) =>
+  details: (params: { app: number, iceId: number, address?: string, lane?: string, activeOnly?: boolean }) =>
     request.get<DetailData>(`${API_PREFIX}/conf/detail`, params, { hideErrorMessage: true }),
 
   nodeMeta: (params: { app: string | number, lane?: string, address?: string }) =>
@@ -135,6 +135,9 @@ const apis = {
 
   iceImport: (json: string) =>
     request.post<ApiResponse>(`${API_PREFIX}/base/import`, { json }),
+
+  changes: (params: { app: number; iceId: number; confId?: number }) =>
+    request.get<{ changes: ChangeItem[] }>(`${API_PREFIX}/conf/changes`, params),
 
   release: (params: ReleaseParams) =>
     request.postParams<ApiResponse>(`${API_PREFIX}/conf/release`, params),

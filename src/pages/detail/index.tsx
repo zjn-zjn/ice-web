@@ -6,7 +6,47 @@ import type { DetailData, ChildrenItem, ClientRegistryInfo, LeafClassInfo } from
 import MindMapComponent from './components/mind-map'
 import NodeFormModal from './components/node-form'
 import { useCallback, useMemo, useState, useEffect, useRef } from 'react'
-import { App } from 'antd'
+import { App, Button, Modal, Spin, Tag } from 'antd'
+import type { ChangeItem } from '../../types'
+import NodeDiff from './components/node-diff'
+import TreeDiffModal from './components/tree-diff-modal'
+
+// Inline component for confirm dialog content that loads changes
+const ConfirmChangesContent = ({ app, iceId, onViewNode }: {
+  app: number; iceId: number; onViewNode: (confId: number) => void
+}) => {
+  const [changes, setChanges] = useState<ChangeItem[] | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    apis.changes({ app, iceId })
+      .then(res => setChanges(res.changes || []))
+      .catch(() => setChanges([]))
+      .finally(() => setLoading(false))
+  }, [app, iceId])
+
+  if (loading) return <Spin style={{ display: 'block', textAlign: 'center', padding: 20 }} />
+
+  return (
+    <div>
+      {changes?.length ? (
+        <div style={{ maxHeight: 300, overflowY: 'auto' }}>
+          {changes.map(c => (
+            <div key={c.confId} style={{ padding: '4px 0', fontSize: 13 }}>
+              #{c.confId}
+              {c.update.name ? `-${c.update.name}` : ''}
+              {c.update.confName ? ` (${c.update.confName.substring(c.update.confName.lastIndexOf('.') + 1)})` : ''}
+              {' '}
+              <Tag color="blue" style={{ marginLeft: 4, cursor: 'pointer' }} onClick={() => onViewNode(c.confId)}>
+                查看
+              </Tag>
+            </div>
+          ))}
+        </div>
+      ) : <div style={{ color: 'var(--color-text-secondary)', padding: '8px 0' }}>无变更</div>}
+    </div>
+  )
+}
 import OperationBar from './components/operation-bar'
 import ImportModal from '../../components/modals/import-modal'
 import ExportModal from '../../components/modals/export-modal'
@@ -66,7 +106,7 @@ function countUpdatingByNodeId(root: ChildrenItem): number {
 }
 
 const Detail = ({ onBaseName }: { onBaseName?: (name?: string) => void }) => {
-  const { modal, message } = App.useApp()
+  const { message, modal } = App.useApp()
   const location = useLocation()
   const navigate = useNavigate()
   const { app, iceId } = useAppAndIceId()
@@ -103,6 +143,10 @@ const Detail = ({ onBaseName }: { onBaseName?: (name?: string) => void }) => {
   const [mockProcessNodes, setMockProcessNodes] = useState<MockProcessNode[]>([])
   const [selectorValue, setSelectorValue] = useState<string[]>(getInitialSelector)
   const [localTree, setLocalTree] = useState<ChildrenItem | null>(null)
+  const [compareConfId, setCompareConfId] = useState<number | null>(null)
+  const [compareData, setCompareData] = useState<ChangeItem[] | null>(null)
+  const [compareLoading, setCompareLoading] = useState(false)
+  const [treeDiffOpen, setTreeDiffOpen] = useState(false)
   const mindMapRef = useRef<MindMapHandle>(null)
 
   const lane = selectorValue[0] === TRUNK ? undefined : selectorValue[0]
@@ -365,40 +409,40 @@ const Detail = ({ onBaseName }: { onBaseName?: (name?: string) => void }) => {
     })
   }, [patchTree, refreshTree])
 
-  const confirmAndApply = (title: string, apiCall: () => Promise<any>, successMsg: string) => {
-    const updatingNodes: string[] = []
-    const seen = new Set<number>()
-    const collectUpdating = (items: TreeItem[]) => {
-      for (const item of items) {
-        if (item.showConf?.updating && !seen.has(item.showConf.nodeId)) {
-          seen.add(item.showConf.nodeId)
-          updatingNodes.push(item.showConf.labelName)
-        }
-        if (item.children) collectUpdating(item.children)
-      }
-    }
-    collectUpdating(treeList)
+  const openCompare = async (confId: number) => {
+    setCompareConfId(confId)
+    setCompareLoading(true)
+    setCompareData(null)
+    try {
+      const res = await apis.changes({ app, iceId, confId })
+      setCompareData(res.changes || [])
+    } catch { message.error('获取对比数据失败') }
+    finally { setCompareLoading(false) }
+  }
 
+  const confirmAndApply = (title: string, apiCall: () => Promise<any>, successMsg: string) => {
     modal.confirm({
       title,
+      content: <ConfirmChangesContent app={app} iceId={iceId}
+        onViewNode={(confId) => { openCompare(confId) }}
+      />,
+      okText: '确认',
+      cancelText: '取消',
       width: 480,
-      content: updatingNodes.length > 0 ? (
-        <div className="update-list">
-          <div className="update-list-header">{updatingNodes.length} 个节点有变更：</div>
-          {updatingNodes.map((n, i) => (
-            <div key={i} className="update-list-item">{n}</div>
-          ))}
-        </div>
-      ) : undefined,
       onOk: async () => {
-        try {
-          await apiCall()
-          refreshTree()
-          message.success(successMsg)
-          setMockVisible(false)
-          setMockProcessNodes([])
-        } catch {}
-      }
+        await apiCall()
+        refreshTree()
+        message.success(successMsg)
+        setMockVisible(false)
+        setMockProcessNodes([])
+      },
+      footer: (_, { OkBtn, CancelBtn }) => (
+        <>
+          <Button color="orange" variant="outlined" onClick={() => { Modal.destroyAll(); setTreeDiffOpen(true) }}>详情</Button>
+          <CancelBtn />
+          <OkBtn />
+        </>
+      ),
     })
   }
 
@@ -434,6 +478,7 @@ const Detail = ({ onBaseName }: { onBaseName?: (name?: string) => void }) => {
           onEditNode={(node) => setFormState({ node, mode: 'edit' })}
           onAddChild={(node) => setFormState({ node, mode: 'add-child' })}
           onAddFront={(node) => setFormState({ node, mode: 'add-front' })}
+          onCompareNode={(node) => openCompare(node.showConf?.nodeId)}
           onDeleteSuccess={handleDeleteSuccess}
           onMoveSuccess={handleMoveSuccess}
           onMockNode={(node) => { setMockConfId(node.showConf?.nodeId); setMockNodeName(node.showConf?.labelName); setMockVisible(true) }}
@@ -482,6 +527,29 @@ const Detail = ({ onBaseName }: { onBaseName?: (name?: string) => void }) => {
         onOk={() => setExportVisible(false)}
         app={app}
         iceId={iceId}
+      />
+      <Modal
+        title={`节点对比 #${compareConfId ?? ''}`}
+        open={compareConfId !== null}
+        onCancel={() => setCompareConfId(null)}
+        footer={null}
+        width={720}
+        destroyOnClose
+        centered
+        zIndex={2000}
+      >
+        {compareLoading ? <Spin style={{ display: 'block', textAlign: 'center', padding: 40 }} /> :
+          compareData?.[0] ? <NodeDiff active={compareData[0].active} update={compareData[0].update} /> :
+          <div style={{ textAlign: 'center', padding: 20, color: 'var(--color-text-secondary)' }}>无变更数据</div>
+        }
+      </Modal>
+      <TreeDiffModal
+        open={treeDiffOpen}
+        onClose={() => setTreeDiffOpen(false)}
+        app={app}
+        iceId={iceId}
+        lane={lane}
+        registeredClasses={registeredClasses}
       />
     </div>
   )

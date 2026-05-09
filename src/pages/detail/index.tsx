@@ -328,7 +328,7 @@ const Detail = ({ onBaseName }: { onBaseName?: (name?: string) => void }) => {
   const handleEditSuccess = useCallback((editType: number, params: Record<string, any>, response: EditConfResponse) => {
     switch (editType) {
       case 1: // ADD_SON
-        if (params.multiplexIds && response.nodes?.length) {
+        if (response.nodes?.length) {
           patchTree(root => {
             for (const node of response.nodes!) {
               patchAddChild(root, params.selectId, node)
@@ -345,7 +345,7 @@ const Detail = ({ onBaseName }: { onBaseName?: (name?: string) => void }) => {
         patchTree(root => patchUpdateProps(root, params.selectId, params))
         break
       case 4: // ADD_FORWARD
-        if (params.multiplexIds && response.nodes?.length) {
+        if (response.nodes?.length) {
           patchTree(root => patchSetForward(root, params.selectId, response.nodes![0]))
         } else {
           patchTree(root => {
